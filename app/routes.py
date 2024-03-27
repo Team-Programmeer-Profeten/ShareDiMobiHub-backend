@@ -3,7 +3,7 @@ import services
 
 app = Flask(__name__)
 
-@app.route('/', methods = ["POST"])
+@app.route('/report', methods = ["POST"])
 def controller():
     try:
         data = request.get_json()
