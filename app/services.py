@@ -22,13 +22,42 @@ def zones_by_gmcode(gmcode: str) -> list[Zone]:
   response = json.loads(response_str.content)
   return response["zones"]
 
-#print(zones_by_gmcode("GM0599"))
+print(zones_by_gmcode("GM0599"))
 
 # Points on map (public api)
+def points_on_map():
+  request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/public/vehicles_in_public_space"
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+  return response
+
 # Park events, per zone per timestamp
+def park_events(zone_ids, timestamp):
+  request = "https://www.stoopstestdomein.nl/mock-api/3.json"
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+  return response
+
 # User info
+def user_info():
+  request = "https://www.stoopstestdomein.nl/mock-api/4.json"
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+  return response
+
 # Origins from vehicle and how far has it moved
+def origin_distance():
+  request = "https://www.stoopstestdomein.nl/mock-api/5.json"
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+  return response
+
 # Destinations from vehicle and how far has it moved
+def location_distance_moved(zone_ids, start_time, end_time):
+  request = "https://www.stoopstestdomein.nl/mock-api/6.json"
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+  return response
 
 # How many vehicles are in a zone per hour
 def vehicles_in_zone_per_hour():
