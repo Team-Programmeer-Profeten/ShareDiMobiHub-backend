@@ -23,3 +23,13 @@ def zones_by_gmcode(gmcode: str) -> list[Zone]:
   return response["zones"]
 
 print(zones_by_gmcode("GM0599"))
+
+# Points on map (public api)
+# Park events, per zone per timestamp
+# User info
+# Origins from vehicle and how far has it moved
+# Destinations from vehicle and how far has it moved
+
+# How many vehicles are in a zone per hour
+# How many vehicles are in a zone per day
+# How much is a vehicle rented in a zone per day
