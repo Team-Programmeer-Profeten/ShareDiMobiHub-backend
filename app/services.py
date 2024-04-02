@@ -22,7 +22,7 @@ def zones_by_gmcode(gmcode: str) -> list[Zone]:
   response = json.loads(response_str.content)
   return response["zones"]
 
-print(zones_by_gmcode("GM0599"))
+#print(zones_by_gmcode("GM0599"))
 
 # Points on map (public api)
 # Park events, per zone per timestamp
@@ -31,5 +31,25 @@ print(zones_by_gmcode("GM0599"))
 # Destinations from vehicle and how far has it moved
 
 # How many vehicles are in a zone per hour
+def vehicles_in_zone_per_hour():
+  # request = https://api.dashboarddeelmobiliteit.nl/dashboard-api/stats_v2/availability_stats?aggregation_level=hour&group_by=operator&aggregation_function=MAX&zone_ids=52098&start_time=2024-02-27T00:00:00Z&end_time=2024-02-28T00:00:00Z
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/7.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
+
 # How many vehicles are in a zone per day
+def vehicles_in_zone_per_day():
+  # request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/aggregated_stats/available_vehicles?aggregation_level=day&aggregation_time=undefined&zone_ids=34234&start_time=2024-01-28T16:27:45Z&end_time=2024-02-28T16:27:45Z"
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/8.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
+
 # How much is a vehicle rented in a zone per day
+def vehicle_rented_in_zone_per_day():
+  # request = https://api.dashboarddeelmobiliteit.nl/dashboard-api/aggregated_stats/rentals?aggregation_level=day&aggregation_time=undefined&zone_ids=49562&start_time=2022-11-16T00:00:00Z&end_time=2022-11-20T00:00:00Z
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/9.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
