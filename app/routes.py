@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import services
+from app.services import *
 
 app = Flask(__name__)
 
@@ -7,7 +7,7 @@ app = Flask(__name__)
 def controller():
     try:
         data = request.get_json()
-        returnval = services.data_sort(data)
+        returnval = data_sort(data)
         return jsonify(returnval), 200
     except Exception as e:
         return jsonify(message=str(e)), 500
