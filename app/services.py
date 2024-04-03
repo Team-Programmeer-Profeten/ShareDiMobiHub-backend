@@ -15,7 +15,7 @@ def validateMunicipality(municipality):
   for gm in codes["filter_values"]["municipalities"]:
     if gm["name"] == municipality:
       return gm["gm_code"]
-  throw("Municipality not found")
+  raise ValueError("Municipality not found")
 
 def zone_ids_by_gmcode(gmcode):
   zones = []
