@@ -1,5 +1,5 @@
 import requests
-from flask import Flask
+# from flask import Flask
 import json
 from typing import TypedDict
 
@@ -9,6 +9,19 @@ class Zone(TypedDict):
   owner:        any
   zone_id:      int
   zone_type:    str
+
+def validateMunicipality(municipality):
+  codes = json.loads(gm_codes())
+  for gm in codes["filter_values"]["municipalities"]:
+    if gm["name"] == municipality:
+      return gm["gm_code"]
+  throw("Municipality not found")
+
+def zone_ids_by_gmcode(gmcode):
+  zones = []
+  for zone in zones_by_gmcode(validateMunicipality("Amsterdam")):
+    zones.append(zone["zone_id"])
+  return zones
 
 def gm_codes():
   response = requests.get("https://api.dashboarddeelmobiliteit.nl/dashboard-api/public/filters")
@@ -21,8 +34,6 @@ def zones_by_gmcode(gmcode: str) -> list[Zone]:
   response_str = requests.get(request)
   response = json.loads(response_str.content)
   return response["zones"]
-
-print(zones_by_gmcode("GM0599"))
 
 # Points on map (public api)
 def points_on_map():
