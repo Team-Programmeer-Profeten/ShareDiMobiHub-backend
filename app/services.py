@@ -19,7 +19,7 @@ def validateMunicipality(municipality):
 
 def zone_ids_by_gmcode(gmcode):
   zones = []
-  for zone in zones_by_gmcode(validateMunicipality("Amsterdam")):
+  for zone in zones_by_gmcode(gmcode):
     zones.append(zone["zone_id"])
   return zones
 
