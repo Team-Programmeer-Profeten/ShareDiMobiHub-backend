@@ -1,5 +1,5 @@
 import requests
-# from flask import Flask
+from flask import jsonify
 import json
 from typing import TypedDict
 
@@ -9,6 +9,20 @@ class Zone(TypedDict):
   owner:        any
   zone_id:      int
   zone_type:    str
+
+def data_sort(data):
+  selectDetails(data.get("details"))
+
+def selectDetails(details):
+    vehicles = 0
+    for key, value in details.items():
+      if(value):
+        match(key):
+          case "amount_vehicles":
+            vehicles = vehicles_in_zone_per_day()
+            
+    return vehicles
+
 
 def validateMunicipality(municipality):
   codes = json.loads(gm_codes())
@@ -93,3 +107,20 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+data = {
+    "municipality": "Rotterdam",
+    "details": {
+        "amount_vehicles": True,
+        "distance_travelled": True,
+        "rentals": True,
+        "zone_occupation": True
+    },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}
+print(selectDetails(data.get("details")))
