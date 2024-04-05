@@ -2,6 +2,7 @@ import requests
 from flask import Flask
 import json
 from typing import TypedDict
+from datetime import datetime
 
 class Zone(TypedDict):
   municipality: str
@@ -21,8 +22,6 @@ def zones_by_gmcode(gmcode: str) -> list[Zone]:
   response_str = requests.get(request)
   response = json.loads(response_str.content)
   return response["zones"]
-
-print(zones_by_gmcode("GM0599"))
 
 # Points on map (public api)
 def points_on_map():
@@ -82,3 +81,21 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+def areas_from_json(json_str):
+  data = json.loads(json_str)
+  areas = data["areas"]
+  return areas
+
+def timeslot_from_json(json_str):
+  data = json.loads(json_str)
+  json_timeslot = data["timeslot"]
+  start_date = datetime.strptime(json_timeslot["start_date"], "%Y-%m-%d")
+  end_date = datetime.strptime(json_timeslot["end_date"], "%Y-%m-%d")
+  timeslot = [start_date, end_date]
+  return timeslot
+
+def time_format_from_json(json):
+  data = json.loads(json)
+  time_format = data["time_format"]
+  return time_format
