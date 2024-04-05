@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
-from services import *
 from flask_cors import CORS
+from app.services import data_sort
 
 app = Flask(__name__)
 CORS(app)
@@ -14,7 +14,3 @@ def controller():
         return result
     except Exception as e:
         return jsonify(message=str(e)), 500
-    
-    
-if __name__ == "__main__":
-    app.run(debug= True)
