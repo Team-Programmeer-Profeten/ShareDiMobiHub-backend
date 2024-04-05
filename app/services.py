@@ -1,22 +1,89 @@
 import requests
-from flask import Flask
 import json
-from typing import TypedDict
 from datetime import datetime
 
-class Zone(TypedDict):
-  municipality: str
-  name:         str
-  owner:        any
-  zone_id:      int
-  zone_type:    str
+def data_sort(json_data):
+  details = select_details(json_data)
+  return details  
+
+def select_details(json_data):
+    chosen_details = {}
+    json_details = json_data.get("details")
+    for key, value in json_details.items():
+      if(value):
+        match(key):
+          case "amount_vehicles":
+            chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
+            # chosen_details = amount_vehicles(json_data)
+          case "distance_travelled":
+            chosen_details = None
+            # TODO: distance travelled
+          case "rentals":
+            chosen_details = None
+            # TODO: rentals
+          case "zone_occupation":
+            chosen_details = None
+            # TODO: zone occupation
+          case _:
+            chosen_details = None
+
+      return chosen_details
+
+
+def validate_municipality(municipality):
+  codes = json.loads(gm_codes())
+  for gm in codes["filter_values"]["municipalities"]:
+    if gm["name"] == municipality:
+      return gm["gm_code"]
+  raise ValueError("Municipality not found")
+
+def zone_ids_by_gmcode(gmcode):
+  zones = []
+  for zone in zones_by_gmcode(gmcode):
+    zones.append(zone["zone_id"])
+  return zones
+
+# Amount of vehicles available in a municipality
+def amount_vehicles(json_data):
+    aggr_lvl = json_data.get("time_format")
+    zone_ids = zone_ids_by_gmcode(json_data.get("municipality"))
+    start_time = json_data.get("timeslot")["start_date"]
+    end_time = json_data.get("timeslot")["end_date"]
+
+    request = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/stats_v2/availability_stats?aggregation_level={aggr_lvl}&group_by=operator&aggregation_function=MAX&zone_ids={zone_ids}&start_time={start_time}&end_time={end_time}"
+    response_str = requests.get(request)
+    response = json.loads(response_str.content)
+
+    return response
+  
+  
+def areas_from_json(json_str):
+  data = json.loads(json_str)
+  areas = data["areas"]
+  return areas
+
+
+def timeslot_from_json(json_str):
+  data = json.loads(json_str)
+  json_timeslot = data["timeslot"]
+  start_date = datetime.strptime(json_timeslot["start_date"], "%Y-%m-%d")
+  end_date = datetime.strptime(json_timeslot["end_date"], "%Y-%m-%d")
+  timeslot = [start_date, end_date]
+  return timeslot
+
+def time_format_from_json(json):
+  data = json.loads(json)
+  time_format = data["time_format"]
+  return time_format
+
+###---------------------------------------------API calls---------------------------------------------------###
 
 def gm_codes():
   response = requests.get("https://api.dashboarddeelmobiliteit.nl/dashboard-api/public/filters")
   codes = response.content
   return codes
 
-def zones_by_gmcode(gmcode: str) -> list[Zone]: 
+def zones_by_gmcode(gmcode): 
   # request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/zones?gm_code={gmcode}".format(gmcode = gmcode)
   request = "https://www.stoopstestdomein.nl/mock-api/1.json"
   response_str = requests.get(request)
@@ -81,21 +148,3 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
-
-def areas_from_json(json_str):
-  data = json.loads(json_str)
-  areas = data["areas"]
-  return areas
-
-def timeslot_from_json(json_str):
-  data = json.loads(json_str)
-  json_timeslot = data["timeslot"]
-  start_date = datetime.strptime(json_timeslot["start_date"], "%Y-%m-%d")
-  end_date = datetime.strptime(json_timeslot["end_date"], "%Y-%m-%d")
-  timeslot = [start_date, end_date]
-  return timeslot
-
-def time_format_from_json(json):
-  data = json.loads(json)
-  time_format = data["time_format"]
-  return time_format
