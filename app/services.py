@@ -1,5 +1,6 @@
 import requests
 import json
+from datetime import datetime
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -54,6 +55,26 @@ def amount_vehicles(json_data):
     response = json.loads(response_str.content)
 
     return response
+  
+  
+def areas_from_json(json_str):
+  data = json.loads(json_str)
+  areas = data["areas"]
+  return areas
+
+
+def timeslot_from_json(json_str):
+  data = json.loads(json_str)
+  json_timeslot = data["timeslot"]
+  start_date = datetime.strptime(json_timeslot["start_date"], "%Y-%m-%d")
+  end_date = datetime.strptime(json_timeslot["end_date"], "%Y-%m-%d")
+  timeslot = [start_date, end_date]
+  return timeslot
+
+def time_format_from_json(json):
+  data = json.loads(json)
+  time_format = data["time_format"]
+  return time_format
 
 ###---------------------------------------------API calls---------------------------------------------------###
 
