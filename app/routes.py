@@ -9,7 +9,6 @@ CORS(app)
 def controller():
     try:
         data = request.get_json()
-        print(data)
         result = data_sort(data)
         return result
     except Exception as e:

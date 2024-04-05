@@ -10,7 +10,7 @@ def select_details(json_data):
     json_details = json_data.get("details")
     for key, value in json_details.items():
       if(value):
-        match(key):
+        match key:
           case "amount_vehicles":
             chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
             # chosen_details = amount_vehicles(json_data)
