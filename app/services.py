@@ -7,19 +7,19 @@ def data_sort(json_data):
   return details  
 
 def select_details(json_data):
-    chosen_details = {}
+    vehicles = 0
     json_details = json_data.get("details")
     for key, value in json_details.items():
       if(value):
         match(key):
           case "amount_vehicles":
-            chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
+            vehicles = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
             # chosen_details = amount_vehicles(json_data)
           case "distance_travelled":
             chosen_details = None
             # TODO: distance travelled
           case "rentals":
-            chosen_details = None
+            vehicles = total_vehicles_rented_per_day() 
             # TODO: rentals
           case "zone_occupation":
             chosen_details = None
@@ -27,8 +27,25 @@ def select_details(json_data):
           case _:
             chosen_details = None
 
-      return chosen_details
+      return vehicles
 
+def total_vehicles_rented():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  for item in vehiclesRentedPerDay:
+    item.pop("start_interval")
+  total = sum(sum(item.values()) for item in vehiclesRentedPerDay)
+  newJson = {"total": total}
+  return newJson
+
+def total_vehicles_rented_per_day():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  newJsonList = []
+  for item in vehiclesRentedPerDay:
+    day = item.pop("start_interval")
+    total = sum(item.values())
+    newItem = {"start_interval" : day , "total": total}
+    newJsonList.append(newItem)
+  return newJsonList
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -148,3 +165,5 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+print(total_vehicles_rented_per_day())
