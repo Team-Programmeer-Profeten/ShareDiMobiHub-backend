@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime
+from collections import defaultdict
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -19,7 +20,7 @@ def select_details(json_data):
             chosen_details = None
             # TODO: distance travelled
           case "rentals":
-            vehicles = total_vehicles_rented_per_day() 
+            vehicles = total_vehicles_rented_per_time_period() 
             # TODO: rentals
           case "zone_occupation":
             chosen_details = None
@@ -37,15 +38,14 @@ def total_vehicles_rented():
   newJson = {"total": total}
   return newJson
 
-def total_vehicles_rented_per_day():
-  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
-  newJsonList = []
+def total_vehicles_rented_per_time_period():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"] 
+  sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
   for item in vehiclesRentedPerDay:
-    day = item.pop("start_interval")
-    total = sum(item.values())
-    newItem = {"start_interval" : day , "total": total}
-    newJsonList.append(newItem)
-  return newJsonList
+    item.pop("start_interval", None)
+    for key, value in item.items():
+      sumPerVehicleType[key] += value
+  return dict(sumPerVehicleType)
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -166,4 +166,4 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
-print(total_vehicles_rented_per_day())
+print(total_vehicles_rented_per_time_period())
