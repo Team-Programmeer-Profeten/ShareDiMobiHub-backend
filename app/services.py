@@ -86,10 +86,12 @@ def distance_travelled(json_data):
   response_str = requests.get(request)
   response = json.loads(response_str.content)
 
-  totalDistanceTravelled = 0
+  distance_per_brand = {}
   for trip in response:
-    totalDistanceTravelled += trip["distance_in_meters"]
-  return totalDistanceTravelled
+    if trip["system_id"] not in distance_per_brand:
+      distance_per_brand[trip["system_id"]] = 0
+    distance_per_brand[trip["system_id"]] += trip["distance"]
+  return distance_per_brand
 
 ###---------------------------------------------API calls---------------------------------------------------###
 
