@@ -17,6 +17,7 @@ def select_details(json_data):
             # chosen_details = amount_vehicles(json_data)
           case "distance_travelled":
             chosen_details = None
+            # chosen_details = distance_travelled(json_data)
             # TODO: distance travelled
           case "rentals":
             chosen_details = None
@@ -75,6 +76,20 @@ def time_format_from_json(json):
   data = json.loads(json)
   time_format = data["time_format"]
   return time_format
+
+def distance_travelled(json_data):
+  data = json.loads(json_data)
+  zone_ids = zone_ids_by_gmcode(data.get("municipality"))
+  start_time = data.get("timeslot")["start_date"]
+  end_time = data.get("timeslot")["end_date"]
+  request = f'https://api.dashboarddeelmobiliteit.nl/dashboard-api/v2/trips/origins?zone_ids={zone_ids}&start_time={start_time}&end_time={end_time}'
+  response_str = requests.get(request)
+  response = json.loads(response_str.content)
+
+  totalDistanceTravelled = 0
+  for trip in response:
+    totalDistanceTravelled += trip["distance_in_meters"]
+  return totalDistanceTravelled
 
 ###---------------------------------------------API calls---------------------------------------------------###
 
@@ -148,3 +163,4 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
