@@ -8,44 +8,26 @@ def data_sort(json_data):
   return details  
 
 def select_details(json_data):
-    vehicles = 0
+    chosen_details = {}
     json_details = json_data.get("details")
     for key, value in json_details.items():
       if(value):
         match(key):
           case "amount_vehicles":
-            vehicles = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
+            chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
             # chosen_details = amount_vehicles(json_data)
           case "distance_travelled":
             chosen_details = None
             # TODO: distance travelled
           case "rentals":
-            vehicles = total_vehicles_rented_per_time_period() 
-            # TODO: rentals
+            chosen_details = total_vehicles_rented_per_time_period() 
           case "zone_occupation":
             chosen_details = None
             # TODO: zone occupation
           case _:
             chosen_details = None
 
-      return vehicles
-
-def total_vehicles_rented():
-  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
-  for item in vehiclesRentedPerDay:
-    item.pop("start_interval")
-  total = sum(sum(item.values()) for item in vehiclesRentedPerDay)
-  newJson = {"total": total}
-  return newJson
-
-def total_vehicles_rented_per_time_period():
-  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"] 
-  sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
-  for item in vehiclesRentedPerDay:
-    item.pop("start_interval", None)
-    for key, value in item.items():
-      sumPerVehicleType[key] += value
-  return dict(sumPerVehicleType)
+      return chosen_details
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -72,7 +54,24 @@ def amount_vehicles(json_data):
     response = json.loads(response_str.content)
 
     return response
-  
+
+def total_vehicles_rented():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  for item in vehiclesRentedPerDay:
+    item.pop("start_interval")
+  total = sum(sum(item.values()) for item in vehiclesRentedPerDay)
+  newJson = {"total": total}
+  return newJson
+
+def total_vehicles_rented_per_time_period():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"] 
+  sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
+  for item in vehiclesRentedPerDay:
+    item.pop("start_interval", None)
+    for key, value in item.items():
+      sumPerVehicleType[key] += value
+  return dict(sumPerVehicleType)
+
   
 def areas_from_json(json_str):
   data = json.loads(json_str)
@@ -165,5 +164,3 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
-
-print(total_vehicles_rented_per_time_period())
