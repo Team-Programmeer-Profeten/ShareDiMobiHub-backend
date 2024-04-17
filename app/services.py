@@ -148,3 +148,11 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+def hubs_by_municipality(GM_code):
+  # remove no parking from actual request when in prod
+  # request = "https://mds.dashboarddeelmobiliteit.nl/admin/zones?municipality=GM0599&geography_types=no_parking&geography_types=stop&geography_types=monitoring"
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/10.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
