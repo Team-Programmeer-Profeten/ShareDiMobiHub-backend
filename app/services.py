@@ -14,21 +14,22 @@ def select_details(json_data):
       if(value):
         match(key):
           case "amount_vehicles":
-            chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
-            # chosen_details = amount_vehicles(json_data)
+            chosen_details["amount_vehicles"] = vehicles_in_zone_per_day() # Mock data
+            # chosen_details["amount_vehicles"] = amount_vehicles(json_data)
           case "distance_travelled":
-            chosen_details = None
-            # chosen_details = distance_travelled(json_data)
-            # TODO: distance travelled
+            chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time")) # Mock data
+            # chosen_details["distance_travelled"] = distance_travelled(json_data)
           case "rentals":
-            chosen_details = total_vehicles_rented_per_time_period() 
+            chosen_details["rentals"] = total_vehicles_rented_per_time_period() # Mock data
           case "zone_occupation":
-            chosen_details = None
+            chosen_details["zone_occupation"] = park_events(json_data.get("zone_ids"), json_data.get("timestamp")) # Mock data
             # TODO: zone occupation
+          case "hubs":
+            chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality")) # Mock data
           case _:
-            chosen_details = None
+            pass
 
-      return chosen_details
+    return chosen_details
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
