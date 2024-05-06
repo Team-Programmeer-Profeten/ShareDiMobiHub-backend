@@ -2,6 +2,22 @@ import requests
 import json
 from datetime import datetime
 
+json_data = {
+    "municipality": "Amersfoort",
+    "details": {
+        "amount_vehicles": False,
+        "distance_travelled": False,
+        "rentals": False,
+        "zone_occupation": True
+    },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}
+
 def data_sort(json_data):
   details = select_details(json_data)
   return details  
@@ -22,13 +38,25 @@ def select_details(json_data):
             chosen_details = None
             # TODO: rentals
           case "zone_occupation":
-            chosen_details = None
+            chosen_details = park_events_per_municipality(json_data.get("municipality", json_details.get("timeslot")))
             # TODO: zone occupation
           case _:
             chosen_details = None
 
       return chosen_details
 
+def park_events_per_municipality(municipality, timeslot):
+  '''
+  functie duurt mega lang want elke zone heeft heel veel json aan park events die opgehaald wordt via api park_events(id, timeslot)
+  als je dan door elke zone van een grote gemeente gaat is dat pijn
+
+  '''
+  zones = zones_by_gmcode(find_municipality_gmcode(municipality))
+  eventsPerMunicipality = {"park_events" : []}
+  for zone in zones:
+    id = zone.get("zone_id")
+    eventsPerMunicipality["park_events"].append(park_events(id, timeslot))
+  return eventsPerMunicipality
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -77,11 +105,19 @@ def time_format_from_json(json):
   return time_format
 
 ###---------------------------------------------API calls---------------------------------------------------###
+def find_municipality_gmcode(municipality):
+  if(municipality == None):
+    raise ValueError("No municipality given")
+  codes = gm_codes().get("filter_values")
+  for i in codes.get("municipalities"):
+    if i.get("name") == municipality:
+      return i.get("gm_code")
+  raise Exception("gm code could not be found")
 
 def gm_codes():
   response = requests.get("https://api.dashboarddeelmobiliteit.nl/dashboard-api/public/filters")
   codes = response.content
-  return codes
+  return json.loads(codes)
 
 def zones_by_gmcode(gmcode): 
   # request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/zones?gm_code={gmcode}".format(gmcode = gmcode)
@@ -148,3 +184,5 @@ def vehicle_rented_in_zone_per_day():
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+print(park_events_per_municipality(json_data.get("municipality"), json_data.get("timeslot")))
