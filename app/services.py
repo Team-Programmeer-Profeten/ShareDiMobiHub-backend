@@ -1,6 +1,8 @@
 import requests
 import json
 from datetime import datetime
+import datetime as dt
+from collections import defaultdict
 
 json_data = {
     "municipality": "Amersfoort",
@@ -118,7 +120,8 @@ park_event_data = {
             },
             "start_time": "2023-09-04T13:06:10.476429Z",
             "system_id": "check"
-        }]
+        }
+        ]
 }
 
 def data_sort(json_data):
@@ -128,6 +131,10 @@ def data_sort(json_data):
 def select_details(json_data):
     chosen_details = {}
     json_details = json_data.get("details")
+    # functies die sws moeten worden aangeroepen voor de inforgraphic:
+    average_parkingtime_per_vehicletype(json_data)
+
+    # optionele functies
     for key, value in json_details.items():
       if(value):
         match(key):
@@ -141,34 +148,43 @@ def select_details(json_data):
             chosen_details = None
             # TODO: rentals
           case "zone_occupation":
-            chosen_details = park_events_per_municipality(json_data.get("municipality", json_details.get("timeslot")))
+            chosen_details = None
             # TODO: zone occupation
           case _:
             chosen_details = None
 
       return chosen_details
 
-def park_events_per_municipality(municipality):
+def park_events_per_municipality(municipality, timeslot):
   '''
-  functie duurt mega lang want elke zone heeft heel veel json aan park events die opgehaald wordt via api park_events(id, timeslot)
-  als je dan door elke zone van een grote gemeente gaat is dat pijn
+  gather all zone ids using municipality's associated gm code
+  then use these zone ids to gather all park events from the municipality
   '''
   zones = zones_by_gmcode(find_municipality_gmcode(municipality))
-  eventsPerMunicipality = {"park_events" : []}
-  for zone in zones:
-    id = zone.get("zone_id")
-    eventsPerMunicipality["park_events"].append(park_events(id))
-  return eventsPerMunicipality
+  ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
+  events = park_events(','.join(map(str, ids)), timeslot)
+  return events
 
-def average_parkingtime_per_vehicletype_and_municipality():
+def average_parkingtime_per_vehicletype(selectedDetails):
+  '''
+  totaal aantal voertuigen per type en som van de parkeertijd per type eerst berekenen en vervolgens het gemiddelde
+  '''
+  park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
+  vehicleTypeCount = defaultdict(int)
+  sumPerVehicleType = defaultdict(dt.timedelta)
   for parkEvent in park_event_data["park_events"]:
-    print(parkEvent["end_time"])
-    start_time = parkEvent["start_time"]
-    end_time = parkEvent["end_time"]
-    if(start_time or end_time == None):
-      print("is none")
+    if(parkEvent["end_time"] is None or parkEvent["start_time"] is None):
       continue
-    print(parkEvent)
+    start_time = dt.datetime.strptime(parkEvent["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    end_time = dt.datetime.strptime(parkEvent["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    sumPerVehicleType[parkEvent["form_factor"]] += end_time - start_time # form factor is the vehicle type
+    vehicleTypeCount[parkEvent["form_factor"]] += 1 
+
+  averagePerVehicleType = defaultdict(dt.timedelta)
+  for vehicleType in sumPerVehicleType:
+    averagePerVehicleType[vehicleType] = sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType]
+  return dict(averagePerVehicleType)
+
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -247,6 +263,8 @@ def points_on_map():
 
 # Park events, per zone per timestamp
 def park_events(zone_ids, timestamp):
+  # park events zonder timezone
+  realRequest = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/park_events?zone_ids={zone_ids}"
   request = "https://www.stoopstestdomein.nl/mock-api/3.json"
   response_str = requests.get(request)
   response = json.loads(response_str.content)
@@ -297,4 +315,5 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
-print(average_parkingtime_per_vehicletype_and_municipality())
+print(average_parkingtime_per_vehicletype(json_data))
+# print(park_events_per_municipality("Amersfoort"))
