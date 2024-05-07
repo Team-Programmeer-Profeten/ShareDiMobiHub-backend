@@ -62,39 +62,40 @@ def create_overlay(data):
     return overlay_path
 
 # De gegevens die we willen toevoegen
-data = {
-    'municipality': 'Utrecht',
-    'time_period': 'Maart-April',
-    'date': datetime.now().strftime("%d-%m-%Y"),
-    'topics': ['Hoeveelheid voertuigen', 'Afstand afgelegd', 'Verhuringen', 'Zone bezetting', 'Hubs'],
-    'amount_hubs': '32',
-    'service_providers': [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }],
-    # Voeg meer data toe als dat nodig is
-}
+# data = {
+#     'municipality': 'Utrecht',
+#     'time_period': 'Maart-April',
+#     'date': datetime.now().strftime("%d-%m-%Y"),
+#     'topics': ['Hoeveelheid voertuigen', 'Afstand afgelegd', 'Verhuringen', 'Zone bezetting', 'Hubs'],
+#     'amount_hubs': '32',
+#     'service_providers': [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }],
+#     # Voeg meer data toe als dat nodig is
+# }
 
-# Maak een PDF met nieuwe inhoud
-overlay_pdf_path = create_overlay(data)
+def create_pdf(data):
+    # Maak een PDF met nieuwe inhoud
+    overlay_pdf_path = create_overlay(data)
 
-# Lees de bestaande template en de overlay
-template_path = './utils/Infographic_Template.pdf'
-template = PdfReader(template_path)
-overlay = PdfReader(overlay_pdf_path)
+    # Lees de bestaande template en de overlay
+    template_path = './utils/Infographic_Template.pdf'
+    template = PdfReader(template_path)
+    overlay = PdfReader(overlay_pdf_path)
 
-# Maak een nieuwe PdfWriter om de samengestelde PDF te maken
-writer = PdfWriter()
+    # Maak een nieuwe PdfWriter om de samengestelde PDF te maken
+    writer = PdfWriter()
 
-# Voeg inhoud van de overlay toe aan de eerste pagina van de template
-first_page = template.pages[0]
-overlay_page = overlay.pages[0]
+    # Voeg inhoud van de overlay toe aan de eerste pagina van de template
+    first_page = template.pages[0]
+    overlay_page = overlay.pages[0]
 
-# Voeg de overlay-inhoud toe aan de eerste pagina van de template
-first_page.merge_page(overlay_page)
+    # Voeg de overlay-inhoud toe aan de eerste pagina van de template
+    first_page.merge_page(overlay_page)
 
-# Voeg de samengestelde pagina toe aan de PdfWriter
-writer.add_page(first_page)
+    # Voeg de samengestelde pagina toe aan de PdfWriter
+    writer.add_page(first_page)
 
-# Schrijf de nieuwe samengestelde PDF
-new_pdf_path = './utils/filled_infographic.pdf'
-writer.write(new_pdf_path)
+    # Schrijf de nieuwe samengestelde PDF
+    new_pdf_path = './utils/filled_infographic.pdf'
+    writer.write(new_pdf_path)
 
-print(f"Nieuwe Infographic PDF gemaakt: {new_pdf_path}")
+    print(f"Nieuwe Infographic PDF gemaakt: {new_pdf_path}")

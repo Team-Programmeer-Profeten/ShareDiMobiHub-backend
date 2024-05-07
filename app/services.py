@@ -2,29 +2,59 @@ import requests
 import json
 from datetime import datetime
 from collections import defaultdict
+from pdf_generator import create_pdf
 
 def data_sort(json_data):
   details = select_details(json_data)
-  return details  
+  report = create_pdf(details)
+  return report
 
 def select_details(json_data):
     chosen_details = {}
+
+    municipality = json_data.get("municipality")
+    chosen_details["municipality"] = municipality
+
+    start_date = json_data.get("timeslot")["start_date"]
+    end_date = json_data.get("timeslot")["end_date"]
+
+    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Format the dates as "DD-MM"
+    start_date_str = start_date_obj.strftime("%d-%m")
+    end_date_str = end_date_obj.strftime("%d-%m")
+    chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
+
+    chosen_details["date"] = datetime.now().strftime("%Y-%m-%d")
+
+    chosen_details["topics"] = []
+
+    chosen_details["amount_hubs"] = total_amount_hubs(json_data)
+
+    chosen_details["service_providers"] = get_service_providers()
+
     json_details = json_data.get("details")
     for key, value in json_details.items():
       if(value):
         match(key):
           case "amount_vehicles":
+            chosen_details["topics"].append("Hoeveelheid Voertuigen")
             chosen_details["amount_vehicles"] = vehicles_in_zone_per_day() # Mock data
             # chosen_details["amount_vehicles"] = amount_vehicles(json_data)
           case "distance_travelled":
+            chosen_details["topics"].append("Afstand Afgelegd")
             chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time")) # Mock data
             # chosen_details["distance_travelled"] = distance_travelled(json_data)
           case "rentals":
+            chosen_details["topics"].append("Verhuringen")
             chosen_details["rentals"] = total_vehicles_rented_per_time_period() # Mock data
           case "zone_occupation":
+            chosen_details["topics"].append("Zone Bezetting")
             chosen_details["zone_occupation"] = park_events(json_data.get("zone_ids"), json_data.get("timestamp")) # Mock data
             # TODO: zone occupation
           case "hubs":
+            chosen_details["topics"].append("Hubs")
             chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality")) # Mock data
           case _:
             pass
@@ -43,6 +73,13 @@ def zone_ids_by_gmcode(gmcode):
   for zone in zones_by_gmcode(gmcode):
     zones.append(zone["zone_id"])
   return zones
+
+def total_amount_hubs(json_data):
+  return len(hubs_by_municipality(json_data.get("municipality")))
+
+def get_service_providers():
+  # TODO: Implement service providers
+  return [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }] # Mock data
 
 # Amount of vehicles available in a municipality
 def amount_vehicles(json_data):
@@ -190,3 +227,21 @@ def hubs_by_municipality(GM_code):
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+
+print(data_sort({
+  "municipality": "Utrecht",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": True
+  },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}))
