@@ -152,7 +152,6 @@ def park_events_per_municipality(municipality):
   '''
   functie duurt mega lang want elke zone heeft heel veel json aan park events die opgehaald wordt via api park_events(id, timeslot)
   als je dan door elke zone van een grote gemeente gaat is dat pijn
-
   '''
   zones = zones_by_gmcode(find_municipality_gmcode(municipality))
   eventsPerMunicipality = {"park_events" : []}
@@ -162,8 +161,14 @@ def park_events_per_municipality(municipality):
   return eventsPerMunicipality
 
 def average_parkingtime_per_vehicletype_and_municipality():
-  
-  return None
+  for parkEvent in park_event_data["park_events"]:
+    print(parkEvent["end_time"])
+    start_time = parkEvent["start_time"]
+    end_time = parkEvent["end_time"]
+    if(start_time or end_time == None):
+      print("is none")
+      continue
+    print(parkEvent)
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -292,4 +297,4 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
-print(park_events_per_municipality(json_data.get("municipality"), json_data.get("timeslot")))
+print(average_parkingtime_per_vehicletype_and_municipality())
