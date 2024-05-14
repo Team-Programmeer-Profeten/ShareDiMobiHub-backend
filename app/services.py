@@ -167,19 +167,22 @@ def park_events_per_municipality(municipality, timeslot):
 
 def average_parkingtime_per_vehicletype(selectedDetails):
   '''
-  totaal aantal voertuigen per type en som van de parkeertijd per type eerst berekenen en vervolgens het gemiddelde
+  uses park_events_per_municipality to gather all park events in a municipality
+  then uses this data for calculating the average parking time per vehicle type
   '''
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   vehicleTypeCount = defaultdict(int)
   sumPerVehicleType = defaultdict(dt.timedelta)
+  # sum of vehicles per vechicle type
   for parkEvent in park_event_data["park_events"]:
     if(parkEvent["end_time"] is None or parkEvent["start_time"] is None):
       continue
     start_time = dt.datetime.strptime(parkEvent["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
     end_time = dt.datetime.strptime(parkEvent["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
     sumPerVehicleType[parkEvent["form_factor"]] += end_time - start_time # form factor is the vehicle type
-    vehicleTypeCount[parkEvent["form_factor"]] += 1 
+    vehicleTypeCount[parkEvent["form_factor"]] += 1
 
+  # calculate average
   averagePerVehicleType = defaultdict(dt.timedelta)
   for vehicleType in sumPerVehicleType:
     averagePerVehicleType[vehicleType] = sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType]
@@ -263,8 +266,9 @@ def points_on_map():
 
 # Park events, per zone per timestamp
 def park_events(zone_ids, timestamp):
-  # park events zonder timezone
-  realRequest = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/park_events?zone_ids={zone_ids}"
+  # zone_ids komen binnen met , als separator
+  # gebruik in de echte api de data uit de timestamp dict die binnenkomt om de data per timestamp op te halen, we hebben deze mogelijk niet met de geleverde mock-api dus dit kunnen we niet testen.
+  # real request = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/park_events?zone_ids={zone_ids}&timestamp={timestamp.get("start_date")}"
   request = "https://www.stoopstestdomein.nl/mock-api/3.json"
   response_str = requests.get(request)
   response = json.loads(response_str.content)
