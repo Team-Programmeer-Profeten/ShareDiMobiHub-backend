@@ -156,20 +156,20 @@ def select_details(json_data):
       return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
-  '''
-  gather all zone ids using municipality's associated gm code
-  then use these zone ids to gather all park events from the municipality
-  '''
-  zones = zones_by_gmcode(find_municipality_gmcode(municipality))
-  ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
+  ids = zone_ids_per_municipality(municipality)
   events = park_events(','.join(map(str, ids)), timeslot)
   return events
 
+def zone_ids_per_municipality(municipality):
+  '''
+  gather all zone ids using municipality's associated gm code
+  '''
+  zones = zones_by_gmcode(find_municipality_gmcode(municipality))
+  ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
+  return ids
+
 def average_parkingtime_per_vehicletype(selectedDetails):
-  '''
-  uses park_events_per_municipality to gather all park events in a municipality
-  then uses this data for calculating the average parking time per vehicle type
-  '''
+  # relevant parking data for the selected municipality and timeframe
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   vehicleTypeCount = defaultdict(int)
   sumPerVehicleType = defaultdict(dt.timedelta)
@@ -188,6 +188,22 @@ def average_parkingtime_per_vehicletype(selectedDetails):
     averagePerVehicleType[vehicleType] = sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType]
   return dict(averagePerVehicleType)
 
+def average_distance_travelled_per_brand(selectedDetails):
+    # relevant parking data for the selected municipality and timeframe
+    municipality_ids = zone_ids_per_municipality(selectedDetails.get("municipality"))
+    distance_travelled_data = location_distance_moved(municipality_ids, selectedDetails.get("timeslot").get("start_date"), selectedDetails.get("timeslot").get("end_date")).get("trip_destinations")
+    vehicleTypeCount = defaultdict(int)
+    sumPerVehicleType = defaultdict(int)
+    # sum of vehicles per vechicle type
+    for distance_data in distance_travelled_data:
+      vehicleTypeCount[distance_data["system_id"]] += 1 # form factor is the vehicle type
+      sumPerVehicleType[distance_data["system_id"]] += distance_data["distance_in_meters"]
+
+    # calculate average
+    averagePerVehicleType = defaultdict(int)
+    for vehicleType in sumPerVehicleType:
+        averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
+    return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -319,5 +335,4 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
-print(average_parkingtime_per_vehicletype(json_data))
-# print(park_events_per_municipality("Amersfoort"))
+print(average_distance_travelled_per_brand(json_data))
