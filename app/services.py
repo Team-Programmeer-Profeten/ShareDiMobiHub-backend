@@ -185,7 +185,7 @@ def average_parkingtime_per_vehicletype(selectedDetails):
   # calculate average
   averagePerVehicleType = defaultdict(dt.timedelta)
   for vehicleType in sumPerVehicleType:
-    averagePerVehicleType[vehicleType] = sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType]
+    averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
   return dict(averagePerVehicleType)
 
 def average_distance_travelled_per_brand(selectedDetails):
@@ -196,7 +196,7 @@ def average_distance_travelled_per_brand(selectedDetails):
     sumPerVehicleType = defaultdict(int)
     # sum of vehicles per vechicle type
     for distance_data in distance_travelled_data:
-      vehicleTypeCount[distance_data["system_id"]] += 1 # form factor is the vehicle type
+      vehicleTypeCount[distance_data["system_id"]] += 1 #  system_id  is the brand
       sumPerVehicleType[distance_data["system_id"]] += distance_data["distance_in_meters"]
 
     # calculate average
