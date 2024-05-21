@@ -5,7 +5,7 @@ from collections import defaultdict
 
 def data_sort(json_data):
   details = select_details(json_data)
-  return details  
+  return details
 
 def select_details(json_data):
     chosen_details = {}
