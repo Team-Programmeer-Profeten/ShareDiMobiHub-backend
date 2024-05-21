@@ -151,8 +151,47 @@ def amount_vehicles(json_data):
     response = json.loads(response_str.content)
 
     return response
-  
-  
+
+def total_vehicles_rented():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  for item in vehiclesRentedPerDay:
+    item.pop("start_interval")
+  total = sum(sum(item.values()) for item in vehiclesRentedPerDay)
+  newJson = {"total": total}
+  return newJson
+
+def top_5_zones_rented(json_data, zone_type):
+  zones = zones_by_gmcode(validate_municipality(json_data.get("municipality")))
+
+  zones = list(filter(lambda zone: zone["zone_type"] == zone_type, zones))
+  top5 = {}
+
+  zone_ids = []
+  for zone in zones:
+    zone_ids.append(zone["zone_id"])
+
+  for zone in zones:
+    vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"][0]
+    vehiclesRentedPerDay.pop("start_interval")
+    total_rentals = sum(vehiclesRentedPerDay.values())
+    top5[zone['name']] = total_rentals
+
+  top5 = dict(sorted(top5.items(), key=lambda item: item[1], reverse=True)[:5])
+
+  newJson = {"top5": top5}
+  return newJson
+
+
+
+def total_vehicles_rented_per_time_period():
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
+  for item in vehiclesRentedPerDay:
+    item.pop("start_interval", None)
+    for key, value in item.items():
+      sumPerVehicleType[key] += value
+  return dict(sumPerVehicleType)
+
 def areas_from_json(json_str):
   data = json.loads(json_str)
   areas = data["areas"]
@@ -187,7 +226,7 @@ def gm_codes():
   codes = response.content
   return json.loads(codes)
 
-def zones_by_gmcode(gmcode): 
+def zones_by_gmcode(gmcode):
   # request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/zones?gm_code={gmcode}".format(gmcode = gmcode)
   request = "https://www.stoopstestdomein.nl/mock-api/1.json"
   response_str = requests.get(request)
@@ -256,6 +295,14 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
+def vehicle_rented_in_zonelist_per_day(zone_ids):
+  ids = ",".join(zone_ids)
+  # request = https://api.dashboarddeelmobiliteit.nl/dashboard-api/aggregated_stats/rentals?aggregation_level=day&aggregation_time=undefined&zone_ids=ids&start_time=2022-11-16T00:00:00Z&end_time=2022-11-20T00:00:00Z
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/9.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
+
 def hubs_by_municipality(GM_code):
   # remove no parking from actual request when in prod
   # request = "https://mds.dashboarddeelmobiliteit.nl/admin/zones?municipality=GM0599&geography_types=no_parking&geography_types=stop&geography_types=monitoring"
@@ -263,6 +310,9 @@ def hubs_by_municipality(GM_code):
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
+
+
+print(top_5_zones_rented({"municipality": "Amsterdam"}, "neighborhood"))
 
 # print(data_sort({
 #   "municipality": "Rotterdam",
