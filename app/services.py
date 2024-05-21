@@ -4,6 +4,8 @@ from datetime import datetime
 import datetime as dt
 from collections import defaultdict
 from pdf_generator import create_pdf
+from graphs import barchart_horizontal, barchart_vertical
+from bokeh.io import export_svgs
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -37,7 +39,11 @@ def select_details(json_data):
 
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de infographic:
-    average_parkingtime_per_vehicletype_in_minutes(json_data)
+    parkingtime_data = average_parkingtime_per_vehicletype_in_minutes(json_data)
+    parkingtime_graph = barchart_vertical(list(parkingtime_data.keys()), list(parkingtime_data.values()) , 300, 300)
+    # parkingtime_graph.output_backend = "svg"
+    # export_svgs(parkingtime_graph, filename = 'test.svg')
+
     average_distance_travelled_per_vehicletype_in_meters(json_data)
 
     top_5_zones_rented(json_data, "neighborhood")
@@ -336,8 +342,8 @@ data = {
 
 #print(validate_municipality("Rotterdam"))
 
-print(top_5_zones_rented(data, "neighborhood"))
-
+# print(top_5_zones_rented(data, "neighborhood"))
+print(select_details(data))
 # print(data_sort({
 #   "municipality": "Rotterdam",
 #   "details": {

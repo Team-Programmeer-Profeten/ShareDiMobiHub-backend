@@ -9,6 +9,7 @@ def barchart_vertical(categories, data, width, height):
   source = ColumnDataSource(data=dict(x=categories, y=data, color=color))
   p = figure(x_range=categories, width=width, height=height)
   p.vbar(x="x", top="y", color="color", width=0.9, legend_field="x", source=source)
+  save(p)
   return p
 
 def barchart_horizontal(categories, data, width, height):
