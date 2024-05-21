@@ -36,9 +36,14 @@ def select_details(json_data):
     chosen_details["service_providers"] = get_service_providers()
 
     json_details = json_data.get("details")
-    # functies die sws moeten worden aangeroepen voor de inforgraphic:
+    # functies die sws moeten worden aangeroepen voor de infographic:
     average_parkingtime_per_vehicletype_in_minutes(json_data)
     average_distance_travelled_per_vehicletype_in_meters(json_data)
+
+    top_5_zones_rented(json_data, "neighborhood")
+
+    amount_vehicles(json_data)
+    total_vehicles_rented()
 
     # optionele functies
     for key, value in json_details.items():
@@ -120,7 +125,7 @@ def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
-  codes = json.loads(gm_codes())
+  codes = gm_codes()
   for gm in codes["filter_values"]["municipalities"]:
     if gm["name"] == municipality:
       return gm["gm_code"]
@@ -312,7 +317,26 @@ def hubs_by_municipality(GM_code):
   return response
 
 
-print(top_5_zones_rented({"municipality": "Amsterdam"}, "neighborhood"))
+data = {
+  "municipality": "Rotterdam",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": False
+  },
+  "areas": [],
+  "timeslot": {
+    "start_date": "2024-03-03",
+    "end_date": "2024-04-02"
+  },
+  "time_format": "daily"
+}
+
+#print(validate_municipality("Rotterdam"))
+
+print(top_5_zones_rented(data, "neighborhood"))
 
 # print(data_sort({
 #   "municipality": "Rotterdam",
