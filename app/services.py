@@ -3,133 +3,38 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
-
-json_data = {
-    "municipality": "Amersfoort",
-    "details": {
-        "amount_vehicles": False,
-        "distance_travelled": False,
-        "rentals": False,
-        "zone_occupation": True
-    },
-    "areas": [],
-    "timeslot": {
-        "start_date": "2024-03-03",
-        "end_date": "2024-04-02"
-    },
-    "time_format": "daily"
-}
-
-park_event_data = {
-    "park_events": [
-        {
-            "bike_id": "check:3f6f6d76-261f-4635-a83d-cdfd6adb10fd",
-            "end_time": None,
-            "form_factor": "moped",
-            "location": {
-                "latitude": 51.90950318883196,
-                "longitude": 4.424026220523164
-            },
-            "start_time": "2023-12-01T10:03:48.996584Z",
-            "system_id": "check"
-        },
-        {
-            "bike_id": "donkey:35396",
-            "end_time": None,
-            "form_factor": "bicycle",
-            "location": {
-                "latitude": 51.916123890724094,
-                "longitude": 4.454881834110924
-            },
-            "start_time": "2023-12-31T22:51:00.128967Z",
-            "system_id": "donkey"
-        },
-        {
-            "bike_id": "donkey:14357",
-            "end_time": None,
-            "form_factor": "bicycle",
-            "location": {
-                "latitude": 51.920390191591004,
-                "longitude": 4.4739769810402805
-            },
-            "start_time": "2024-01-08T20:06:09.451316Z",
-            "system_id": "donkey"
-        },
-        {
-            "bike_id": "check:ed1a7953-ee2c-4ed9-85c6-77551987a68e",
-            "end_time": None,
-            "form_factor": "moped",
-            "location": {
-                "latitude": 51.910317103396935,
-                "longitude": 4.425207440463481
-            },
-            "start_time": "2024-01-08T18:33:32.671667Z",
-            "system_id": "check"
-        },
-        {
-            "bike_id": "donkey:26839",
-            "end_time": None,
-            "form_factor": "bicycle",
-            "location": {
-                "latitude": 51.91410173233142,
-                "longitude": 4.522598000166812
-            },
-            "start_time": "2024-01-09T18:21:44.168253Z",
-            "system_id": "donkey"
-        },
-        {
-            "bike_id": "gosharing:ik8i",
-            "end_time": "2024-02-19T19:56:41.368516Z",
-            "form_factor": "bicycle",
-            "location": {
-                "latitude": 51.97035638060694,
-                "longitude": 4.563827475798044
-            },
-            "start_time": "2024-01-13T16:43:49.500090Z",
-            "system_id": "gosharing"
-        },
-        {
-            "bike_id": "check:1d658939-3dfb-40f4-8e36-e48ac1ee2aee",
-            "end_time": None,
-            "form_factor": "moped",
-            "location": {
-                "latitude": 51.91882091600405,
-                "longitude": 4.501299485979865
-            },
-            "start_time": "2024-01-13T17:40:01.830909Z",
-            "system_id": "check"
-        },
-        {
-            "bike_id": "gosharing:6rtv",
-            "end_time": "2024-02-15T16:00:32.075300Z",
-            "form_factor": "moped",
-            "location": {
-                "latitude": 51.872732085468414,
-                "longitude": 4.425197317861058
-            },
-            "start_time": "2023-07-29T22:59:27.853381Z",
-            "system_id": "gosharing"
-        },
-        {
-            "bike_id": "check:6a986f5e-f8a8-44f9-86d8-f66379654dab",
-            "end_time": "2024-02-14T14:33:52.734607Z",
-            "form_factor": "moped",
-            "location": {
-                "latitude": 51.90919389137176,
-                "longitude": 4.424884021801983
-            },
-            "start_time": "2023-09-04T13:06:10.476429Z",
-            "system_id": "check"
-        }
-        ]
-}
+from pdf_generator import create_pdf
 
 def data_sort(json_data):
   details = select_details(json_data)
-  return details  
+  report = create_pdf(details)
+  return report
 
 def select_details(json_data):
     chosen_details = {}
+
+    municipality = json_data.get("municipality")
+    chosen_details["municipality"] = municipality
+
+    start_date = json_data.get("timeslot")["start_date"]
+    end_date = json_data.get("timeslot")["end_date"]
+
+    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Format the dates as "DD-MM"
+    start_date_str = start_date_obj.strftime("%d-%m")
+    end_date_str = end_date_obj.strftime("%d-%m")
+    chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
+
+    chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
+
+    chosen_details["topics"] = []
+
+    chosen_details["amount_hubs"] = total_amount_hubs(json_data)
+
+    chosen_details["service_providers"] = get_service_providers()
+
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de inforgraphic:
     average_parkingtime_per_vehicletype(json_data)
@@ -139,17 +44,23 @@ def select_details(json_data):
       if(value):
         match(key):
           case "amount_vehicles":
-            chosen_details = vehicles_in_zone_per_day() # In development we use this mock, but in production we use amount_vehicles(json_data)
-            # chosen_details = amount_vehicles(json_data)
+            chosen_details["topics"].append("Hoeveelheid Voertuigen")
+            chosen_details["amount_vehicles"] = vehicles_in_zone_per_day() # Mock data
+            # chosen_details["amount_vehicles"] = amount_vehicles(json_data)
           case "distance_travelled":
-            chosen_details = None
-            # TODO: distance travelled
+            chosen_details["topics"].append("Afstand Afgelegd")
+            chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time")) # Mock data
+            # chosen_details["distance_travelled"] = distance_travelled(json_data)
           case "rentals":
-            chosen_details = None
-            # TODO: rentals
+            chosen_details["topics"].append("Verhuringen")
+            chosen_details["rentals"] = total_vehicles_rented_per_time_period() # Mock data
           case "zone_occupation":
-            chosen_details = None
+            chosen_details["topics"].append("Zone Bezetting")
+            chosen_details["zone_occupation"] = park_events(json_data.get("zone_ids"), json_data.get("timestamp")) # Mock data
             # TODO: zone occupation
+          case "hubs":
+            chosen_details["topics"].append("Hubs")
+            chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality")) # Mock data
           case _:
             chosen_details = None
 
@@ -217,6 +128,13 @@ def zone_ids_by_gmcode(gmcode):
   for zone in zones_by_gmcode(gmcode):
     zones.append(zone["zone_id"])
   return zones
+
+def total_amount_hubs(json_data):
+  return len(hubs_by_municipality(json_data.get("municipality")))
+
+def get_service_providers():
+  # TODO: Implement service providers
+  return [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }] # Mock data
 
 # Amount of vehicles available in a municipality
 def amount_vehicles(json_data):
@@ -335,4 +253,28 @@ def vehicle_rented_in_zone_per_day():
   response = json.loads(response_str.content)
   return response
 
-print(average_distance_travelled_per_brand(json_data))
+def hubs_by_municipality(GM_code):
+  # remove no parking from actual request when in prod
+  # request = "https://mds.dashboarddeelmobiliteit.nl/admin/zones?municipality=GM0599&geography_types=no_parking&geography_types=stop&geography_types=monitoring"
+  mockRequest = "https://www.stoopstestdomein.nl/mock-api/10.json"
+  response_str = requests.get(mockRequest)
+  response = json.loads(response_str.content)
+  return response
+
+
+# print(data_sort({
+#   "municipality": "Rotterdam",
+#   "details": {
+#     "amount_vehicles": True,
+#     "distance_travelled": True,
+#     "rentals": True,
+#     "zone_occupation": True,
+#     "hubs": False
+#   },
+#     "areas": [],
+#     "timeslot": {
+#         "start_date": "2024-03-03",
+#         "end_date": "2024-04-02"
+#     },
+#     "time_format": "daily"
+# }))
