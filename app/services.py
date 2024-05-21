@@ -37,7 +37,8 @@ def select_details(json_data):
 
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de inforgraphic:
-    average_parkingtime_per_vehicletype(json_data)
+    average_parkingtime_per_vehicletype_in_minutes(json_data)
+    average_distance_travelled_per_vehicletype_in_meters(json_data)
 
     # optionele functies
     for key, value in json_details.items():
@@ -79,7 +80,7 @@ def zone_ids_per_municipality(municipality):
   ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
   return ids
 
-def average_parkingtime_per_vehicletype(selectedDetails):
+def average_parkingtime_per_vehicletype_in_minutes(selectedDetails):
   # relevant parking data for the selected municipality and timeframe
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   vehicleTypeCount = defaultdict(int)
@@ -96,10 +97,12 @@ def average_parkingtime_per_vehicletype(selectedDetails):
   # calculate average
   averagePerVehicleType = defaultdict(dt.timedelta)
   for vehicleType in sumPerVehicleType:
-    averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
+    average_seconds = round(sumPerVehicleType[vehicleType].total_seconds() / vehicleTypeCount[vehicleType], 3)
+    average_minutes = average_seconds / 60
+    averagePerVehicleType[vehicleType] = average_minutes
   return dict(averagePerVehicleType)
 
-def average_distance_travelled_per_brand(selectedDetails):
+def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     # relevant parking data for the selected municipality and timeframe
     municipality_ids = zone_ids_per_municipality(selectedDetails.get("municipality"))
     distance_travelled_data = location_distance_moved(municipality_ids, selectedDetails.get("timeslot").get("start_date"), selectedDetails.get("timeslot").get("end_date")).get("trip_destinations")
@@ -107,8 +110,8 @@ def average_distance_travelled_per_brand(selectedDetails):
     sumPerVehicleType = defaultdict(int)
     # sum of vehicles per vechicle type
     for distance_data in distance_travelled_data:
-      vehicleTypeCount[distance_data["system_id"]] += 1 #  system_id  is the brand
-      sumPerVehicleType[distance_data["system_id"]] += distance_data["distance_in_meters"]
+      vehicleTypeCount[distance_data["form_factor"]] += 1 #  system_id  is the brand
+      sumPerVehicleType[distance_data["form_factor"]] += distance_data["distance_in_meters"]
 
     # calculate average
     averagePerVehicleType = defaultdict(int)
@@ -260,7 +263,6 @@ def hubs_by_municipality(GM_code):
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
-
 
 # print(data_sort({
 #   "municipality": "Rotterdam",
