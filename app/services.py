@@ -1,6 +1,7 @@
 import requests
 import json
 from datetime import datetime
+import datetime as dt
 from collections import defaultdict
 from pdf_generator import create_pdf
 
@@ -35,6 +36,10 @@ def select_details(json_data):
     chosen_details["service_providers"] = get_service_providers()
 
     json_details = json_data.get("details")
+    # functies die sws moeten worden aangeroepen voor de inforgraphic:
+    average_parkingtime_per_vehicletype(json_data)
+
+    # optionele functies
     for key, value in json_details.items():
       if(value):
         match(key):
@@ -57,9 +62,59 @@ def select_details(json_data):
             chosen_details["topics"].append("Hubs")
             chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality")) # Mock data
           case _:
-            pass
+            chosen_details = None
 
-    return chosen_details
+      return chosen_details
+
+def park_events_per_municipality(municipality, timeslot):
+  ids = zone_ids_per_municipality(municipality)
+  events = park_events(','.join(map(str, ids)), timeslot)
+  return events
+
+def zone_ids_per_municipality(municipality):
+  '''
+  gather all zone ids using municipality's associated gm code
+  '''
+  zones = zones_by_gmcode(find_municipality_gmcode(municipality))
+  ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
+  return ids
+
+def average_parkingtime_per_vehicletype(selectedDetails):
+  # relevant parking data for the selected municipality and timeframe
+  park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
+  vehicleTypeCount = defaultdict(int)
+  sumPerVehicleType = defaultdict(dt.timedelta)
+  # sum of vehicles per vechicle type
+  for parkEvent in park_event_data["park_events"]:
+    if(parkEvent["end_time"] is None or parkEvent["start_time"] is None):
+      continue
+    start_time = dt.datetime.strptime(parkEvent["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    end_time = dt.datetime.strptime(parkEvent["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    sumPerVehicleType[parkEvent["form_factor"]] += end_time - start_time # form factor is the vehicle type
+    vehicleTypeCount[parkEvent["form_factor"]] += 1
+
+  # calculate average
+  averagePerVehicleType = defaultdict(dt.timedelta)
+  for vehicleType in sumPerVehicleType:
+    averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
+  return dict(averagePerVehicleType)
+
+def average_distance_travelled_per_brand(selectedDetails):
+    # relevant parking data for the selected municipality and timeframe
+    municipality_ids = zone_ids_per_municipality(selectedDetails.get("municipality"))
+    distance_travelled_data = location_distance_moved(municipality_ids, selectedDetails.get("timeslot").get("start_date"), selectedDetails.get("timeslot").get("end_date")).get("trip_destinations")
+    vehicleTypeCount = defaultdict(int)
+    sumPerVehicleType = defaultdict(int)
+    # sum of vehicles per vechicle type
+    for distance_data in distance_travelled_data:
+      vehicleTypeCount[distance_data["system_id"]] += 1 #  system_id  is the brand
+      sumPerVehicleType[distance_data["system_id"]] += distance_data["distance_in_meters"]
+
+    # calculate average
+    averagePerVehicleType = defaultdict(int)
+    for vehicleType in sumPerVehicleType:
+        averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
+    return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
   codes = json.loads(gm_codes())
@@ -93,24 +148,7 @@ def amount_vehicles(json_data):
     response = json.loads(response_str.content)
 
     return response
-
-def total_vehicles_rented():
-  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
-  for item in vehiclesRentedPerDay:
-    item.pop("start_interval")
-  total = sum(sum(item.values()) for item in vehiclesRentedPerDay)
-  newJson = {"total": total}
-  return newJson
-
-def total_vehicles_rented_per_time_period():
-  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"] 
-  sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
-  for item in vehiclesRentedPerDay:
-    item.pop("start_interval", None)
-    for key, value in item.items():
-      sumPerVehicleType[key] += value
-  return dict(sumPerVehicleType)
-
+  
   
 def areas_from_json(json_str):
   data = json.loads(json_str)
@@ -131,28 +169,20 @@ def time_format_from_json(json):
   time_format = data["time_format"]
   return time_format
 
-def distance_travelled(json_data):
-  data = json.loads(json_data)
-  zone_ids = zone_ids_by_gmcode(data.get("municipality"))
-  start_time = data.get("timeslot")["start_date"]
-  end_time = data.get("timeslot")["end_date"]
-  request = f'https://api.dashboarddeelmobiliteit.nl/dashboard-api/v2/trips/origins?zone_ids={zone_ids}&start_time={start_time}&end_time={end_time}'
-  response_str = requests.get(request)
-  response = json.loads(response_str.content)
-
-  distance_per_brand = {}
-  for trip in response:
-    if trip["system_id"] not in distance_per_brand:
-      distance_per_brand[trip["system_id"]] = 0
-    distance_per_brand[trip["system_id"]] += trip["distance"]
-  return distance_per_brand
-
 ###---------------------------------------------API calls---------------------------------------------------###
+def find_municipality_gmcode(municipality):
+  if(municipality == None):
+    raise ValueError("No municipality given")
+  codes = gm_codes().get("filter_values")
+  for i in codes.get("municipalities"):
+    if i.get("name") == municipality:
+      return i.get("gm_code")
+  raise Exception("gm code could not be found")
 
 def gm_codes():
   response = requests.get("https://api.dashboarddeelmobiliteit.nl/dashboard-api/public/filters")
   codes = response.content
-  return codes
+  return json.loads(codes)
 
 def zones_by_gmcode(gmcode): 
   # request = "https://api.dashboarddeelmobiliteit.nl/dashboard-api/zones?gm_code={gmcode}".format(gmcode = gmcode)
@@ -170,6 +200,9 @@ def points_on_map():
 
 # Park events, per zone per timestamp
 def park_events(zone_ids, timestamp):
+  # zone_ids komen binnen met , als separator
+  # gebruik in de echte api de data uit de timestamp dict die binnenkomt om de data per timestamp op te halen, we hebben deze mogelijk niet met de geleverde mock-api dus dit kunnen we niet testen.
+  # real request = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/park_events?zone_ids={zone_ids}&timestamp={timestamp.get("start_date")}"
   request = "https://www.stoopstestdomein.nl/mock-api/3.json"
   response_str = requests.get(request)
   response = json.loads(response_str.content)
