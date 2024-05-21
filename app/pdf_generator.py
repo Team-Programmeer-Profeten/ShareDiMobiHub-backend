@@ -31,7 +31,7 @@ def create_overlay(data):
     c.drawString(178, 748, f"{data['time_period']}")
 
     # Date
-    c.drawString(395, 747, f"{data['date']}")
+    c.drawString(395, 747.5, f"{data['date']}")
 
     # Topics
     c.setFont("Poppins-SemiBold", 8)
@@ -44,7 +44,11 @@ def create_overlay(data):
     c.setFont("Poppins-ExtraBold", 36)
     # Hexcode: 0A1A29
     c.setFillColorRGB(0.0392, 0.1019, 0.1608)
-    c.drawString(262, 602, f"{data['amount_hubs']}")
+    if data['amount_hubs'] <= 99:
+        c.drawString(262, 602, f"{data['amount_hubs']}")
+    else:
+        c.setFont("Poppins-ExtraBold", 30)
+        c.drawString(260, 603, f"{data['amount_hubs']}")
 
     # Service providers
     c.setFont("Poppins", 14)

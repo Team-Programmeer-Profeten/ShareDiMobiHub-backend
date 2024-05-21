@@ -26,7 +26,7 @@ def select_details(json_data):
     end_date_str = end_date_obj.strftime("%d-%m")
     chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
 
-    chosen_details["date"] = datetime.now().strftime("%Y-%m-%d")
+    chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
 
     chosen_details["topics"] = []
 
@@ -229,19 +229,19 @@ def hubs_by_municipality(GM_code):
   return response
 
 
-print(data_sort({
-  "municipality": "Utrecht",
-  "details": {
-    "amount_vehicles": True,
-    "distance_travelled": True,
-    "rentals": True,
-    "zone_occupation": True,
-    "hubs": True
-  },
-    "areas": [],
-    "timeslot": {
-        "start_date": "2024-03-03",
-        "end_date": "2024-04-02"
-    },
-    "time_format": "daily"
-}))
+# print(data_sort({
+#   "municipality": "Rotterdam",
+#   "details": {
+#     "amount_vehicles": True,
+#     "distance_travelled": True,
+#     "rentals": True,
+#     "zone_occupation": True,
+#     "hubs": False
+#   },
+#     "areas": [],
+#     "timeslot": {
+#         "start_date": "2024-03-03",
+#         "end_date": "2024-04-02"
+#     },
+#     "time_format": "daily"
+# }))
