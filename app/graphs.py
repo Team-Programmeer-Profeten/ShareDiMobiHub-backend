@@ -27,6 +27,6 @@ def colors(length):
   
 
 
-voertuigen = ["fiets", "auto", "brommer", "a", "b", "c"]
-data = [5, 3, 4, 2, 7, 4]
-save(barchart_horizontal(voertuigen, data, 800, 300))
+# voertuigen = ["fiets", "auto", "brommer", "a", "b", "c"]
+# data = [5, 3, 4, 2, 7, 4]
+# save(barchart_horizontal(voertuigen, data, 800, 300))
