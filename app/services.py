@@ -70,7 +70,7 @@ def select_details(json_data):
           case _:
             chosen_details = None
 
-      return chosen_details
+    return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
   ids = zone_ids_per_municipality(municipality)
@@ -142,7 +142,9 @@ def total_amount_hubs(json_data):
 
 def get_service_providers():
   # TODO: Implement service providers
-  return [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }] # Mock data
+  operators = user_info().get("operators")
+  operator_names = [operators["name"] for operators in operators]
+  return operator_names
 
 # Amount of vehicles available in a municipality
 def amount_vehicles(json_data):
@@ -336,7 +338,7 @@ data = {
 
 #print(validate_municipality("Rotterdam"))
 
-print(top_5_zones_rented(data, "neighborhood"))
+#print(get_service_providers())
 
 # print(data_sort({
 #   "municipality": "Rotterdam",

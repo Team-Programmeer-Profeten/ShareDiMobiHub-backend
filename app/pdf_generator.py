@@ -51,13 +51,19 @@ def create_overlay(data):
         c.drawString(260, 603, f"{data['amount_hubs']}")
 
     # Service providers
-    c.setFont("Poppins", 14)
+    c.setFont("Poppins", 8)  # Set font size to 6
+    columns = 7  # Number of items per column
+    column_width = 100  # Width of each column
+    start_x = 330  # Starting x-position
+    start_y = 675  # Starting y-position
+    line_height = 16  # Height of each line
+
     for i, provider in enumerate(data['service_providers']):
-        if i < 5:
-            c.drawString(390, 665 - (i * 18), f"- {provider['name']} ({provider['type']})")
-        else:
-            c.setFont("Poppins", 12)
-            c.drawString(390, 665 - (i * 16), f"- {provider['name']} ({provider['type']})")
+        column = i // columns
+        row = i % columns
+        x = start_x + column * column_width
+        y = start_y - row * line_height
+        c.drawString(x, y, f"- {provider}")
     
     # Maak de pagina en sluit de canvas
     c.showPage()
