@@ -120,7 +120,7 @@ def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
-  codes = json.loads(gm_codes())
+  codes = gm_codes()
   for gm in codes["filter_values"]["municipalities"]:
     if gm["name"] == municipality:
       return gm["gm_code"]
@@ -160,10 +160,10 @@ def total_vehicles_rented():
   newJson = {"total": total}
   return newJson
 
-def top_5_zones_rented(json_data, zone_type):
+def top_5_zones_rented(json_data):
   zones = zones_by_gmcode(validate_municipality(json_data.get("municipality")))
 
-  zones = list(filter(lambda zone: zone["zone_type"] == zone_type, zones))
+  zones = list(filter(lambda zone: zone["zone_type"] == "neighborhood", zones))
   top5 = {}
 
   zone_ids = []
@@ -181,7 +181,19 @@ def top_5_zones_rented(json_data, zone_type):
   newJson = {"top5": top5}
   return newJson
 
+def top_5_hubs_rented(json_data):
+  zones = zones_by_gmcode(validate_municipality(json_data["municipality"]))
+  top5 = {}
 
+  for zone in zones:
+    if(zone["zone_type"] == "custom" and not "no_park" in zone["name"]):
+        vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"][0]
+        vehiclesRentedPerDay.pop("start_interval")
+        total_rentals = sum(vehiclesRentedPerDay.values())
+        top5[zone['name']] = total_rentals
+
+  top5 = dict(sorted(top5.items(), key=lambda item: item[1], reverse=True)[:5])
+  return {"top5": top5}
 
 def total_vehicles_rented_per_time_period():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
@@ -310,9 +322,6 @@ def hubs_by_municipality(GM_code):
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
-
-
-print(top_5_zones_rented({"municipality": "Amsterdam"}, "neighborhood"))
 
 # print(data_sort({
 #   "municipality": "Rotterdam",
