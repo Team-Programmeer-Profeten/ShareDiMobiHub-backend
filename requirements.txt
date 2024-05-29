@@ -1,1 +1,5 @@
 Flask
+flask-cors
+requests
+reportlab
+PyPDF2

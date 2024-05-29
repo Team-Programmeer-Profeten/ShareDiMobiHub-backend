@@ -5,18 +5,22 @@ from reportlab.lib.pagesizes import A4
 
 from PyPDF2 import PdfReader, PdfWriter
 
+import os
+
 from datetime import datetime
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 # Register a new font for the PDF
-pdfmetrics.registerFont(TTFont('Poppins', './utils/fonts/Poppins-Regular.ttf'))
-pdfmetrics.registerFont(TTFont('Poppins-Bold', './utils/fonts/Poppins-Bold.ttf'))
-pdfmetrics.registerFont(TTFont('Poppins-SemiBold', './utils/fonts/Poppins-SemiBold.ttf'))
-pdfmetrics.registerFont(TTFont('Poppins-ExtraBold', './utils/fonts/Poppins-ExtraBold.ttf'))
+pdfmetrics.registerFont(TTFont('Poppins', os.path.join(dir_path, 'utils', 'fonts', 'Poppins-Regular.ttf')))
+pdfmetrics.registerFont(TTFont('Poppins-Bold', os.path.join(dir_path, 'utils', 'fonts', 'Poppins-Bold.ttf')))
+pdfmetrics.registerFont(TTFont('Poppins-SemiBold', os.path.join(dir_path, 'utils', 'fonts', 'Poppins-SemiBold.ttf')))
+pdfmetrics.registerFont(TTFont('Poppins-ExtraBold', os.path.join(dir_path, 'utils', 'fonts', 'Poppins-ExtraBold.ttf')))
 
 
 def create_overlay(data):
     # Destination path for the overlay PDF
-    overlay_path = './utils/overlay.pdf'
+    overlay_path = os.path.join(dir_path, 'utils', 'overlay.pdf')
     
     c = canvas.Canvas(overlay_path, pagesize=A4)
     
@@ -65,6 +69,34 @@ def create_overlay(data):
         y = start_y - row * line_height
         c.drawString(x, y, f"- {provider}")
     
+    # avg distance travelled in meters
+    c.setFont("Poppins", 10)
+    avg_distance_str = ', '.join(f'{k}: {v}' for k, v in data["avg_distance_travelled"].items())
+    c.drawString(60, 450, avg_distance_str)
+
+    # avg parking time in minutes
+    c.setFont("Poppins", 10)
+    start_y = 200
+    for i, (k, v) in enumerate(data["avg_parking_time"].items()):
+        c.drawString(60, start_y - i*10, f'{k}: {v} minutes')
+
+    # top 5 zones rented
+    c.setFont("Poppins", 10)
+    start_y = 300
+    for i, (k, v) in enumerate(data["top_5_zones_rented"]["top5"].items()):
+        c.drawString(350, start_y - i*10, f'{k}: {v}')
+
+    # total amount of vehicles
+    c.setFont("Poppins", 10)
+    for i, (k, v) in enumerate(data["total_amount_vehicles"].items()):
+        c.drawString(340, 110 - i*12, f'{k}: {v}')
+
+    # total amount of rentals
+    c.setFont("Poppins", 10)
+    total_rentals_str = ', '.join(f'{k}: {v}' for k, v in data["total_vehicles_rented"].items())
+    c.drawString(500, 70, total_rentals_str)
+
+
     # Maak de pagina en sluit de canvas
     c.showPage()
     c.save()
@@ -87,7 +119,7 @@ def create_pdf(data):
     overlay_pdf_path = create_overlay(data)
 
     # Lees de bestaande template en de overlay
-    template_path = './utils/Infographic_Template.pdf'
+    template_path = os.path.join(dir_path, 'utils', 'Infographic_Template.pdf')
     template = PdfReader(template_path)
     overlay = PdfReader(overlay_pdf_path)
 
@@ -105,7 +137,7 @@ def create_pdf(data):
     writer.add_page(first_page)
 
     # Schrijf de nieuwe samengestelde PDF
-    new_pdf_path = './utils/filled_infographic.pdf'
+    new_pdf_path = os.path.join(dir_path, 'utils', 'filled_infographic.pdf')
     writer.write(new_pdf_path)
-
-    print(f"Nieuwe Infographic PDF gemaakt: {new_pdf_path}")
+    
+    return new_pdf_path
