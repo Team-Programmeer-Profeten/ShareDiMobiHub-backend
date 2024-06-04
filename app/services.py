@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
-from pdf_generator import create_pdf
+from .pdf_generator import create_pdf
 from graphs import barchart_horizontal, barchart_vertical
 from bokeh.io import export_svgs, export_png
 
@@ -39,18 +39,19 @@ def select_details(json_data):
 
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de infographic:
-    parkingtime_data = average_parkingtime_per_vehicletype_in_minutes(json_data)
+    parkingtime_data = chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_minutes(json_data)
     parkingtime_graph = barchart_vertical(list(parkingtime_data.keys()), list(parkingtime_data.values()) , 300, 300)
     export_png(parkingtime_graph, filename="plot.png")
     # parkingtime_graph.output_backend = "svg"
     # export_svgs(parkingtime_graph, filename = 'test.svg')
 
-    average_distance_travelled_per_vehicletype_in_meters(json_data)
+    chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
 
-    top_5_zones_rented(json_data, "neighborhood")
+    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data, "neighborhood")
+    # TODO: Top 5 Hubs
 
-    amount_vehicles(json_data)
-    total_vehicles_rented()
+    chosen_details["total_amount_vehicles"] = total_amount_vehicles()
+    chosen_details["total_vehicles_rented"] = total_vehicles_rented()
 
     # optionele functies
     for key, value in json_details.items():
@@ -77,7 +78,7 @@ def select_details(json_data):
           case _:
             chosen_details = None
 
-      return chosen_details
+    return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
   ids = zone_ids_per_municipality(municipality)
@@ -149,7 +150,9 @@ def total_amount_hubs(json_data):
 
 def get_service_providers():
   # TODO: Implement service providers
-  return [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }] # Mock data
+  operators = user_info().get("operators")
+  operator_names = [operators["name"] for operators in operators]
+  return operator_names
 
 # Amount of vehicles available in a municipality
 def amount_vehicles(json_data):
@@ -164,6 +167,18 @@ def amount_vehicles(json_data):
 
     return response
 
+def total_amount_vehicles():
+  json_data = vehicles_in_zone_per_day()
+  sum_dict = {}
+  for item in json_data["available_vehicles_aggregated_stats"]["values"]:
+    for key, value in item.items():
+        if key != "start_interval":
+          if key in sum_dict:
+            sum_dict[key] += value
+          else:
+            sum_dict[key] = value
+  return sum_dict
+
 def total_vehicles_rented():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
   for item in vehiclesRentedPerDay:
@@ -172,10 +187,10 @@ def total_vehicles_rented():
   newJson = {"total": total}
   return newJson
 
-def top_5_zones_rented(json_data, zone_type):
+def top_5_zones_rented(json_data):
   zones = zones_by_gmcode(validate_municipality(json_data.get("municipality")))
 
-  zones = list(filter(lambda zone: zone["zone_type"] == zone_type, zones))
+  zones = list(filter(lambda zone: zone["zone_type"] == "neighborhood", zones))
   top5 = {}
 
   zone_ids = []
@@ -193,7 +208,19 @@ def top_5_zones_rented(json_data, zone_type):
   newJson = {"top5": top5}
   return newJson
 
+def top_5_hubs_rented(json_data):
+  zones = zones_by_gmcode(validate_municipality(json_data["municipality"]))
+  top5 = {}
 
+  for zone in zones:
+    if(zone["zone_type"] == "custom" and not "no_park" in zone["name"]):
+        vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"][0]
+        vehiclesRentedPerDay.pop("start_interval")
+        total_rentals = sum(vehiclesRentedPerDay.values())
+        top5[zone['name']] = total_rentals
+
+  top5 = dict(sorted(top5.items(), key=lambda item: item[1], reverse=True)[:5])
+  return {"top5": top5}
 
 def total_vehicles_rented_per_time_period():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
@@ -322,7 +349,6 @@ def hubs_by_municipality(GM_code):
   response_str = requests.get(mockRequest)
   response = json.loads(response_str.content)
   return response
-
 
 data = {
   "municipality": "Rotterdam",
