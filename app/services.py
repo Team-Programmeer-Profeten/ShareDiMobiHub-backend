@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
-from pdf_generator import create_pdf
+from .pdf_generator import create_pdf
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -36,9 +36,15 @@ def select_details(json_data):
     chosen_details["service_providers"] = get_service_providers()
 
     json_details = json_data.get("details")
-    # functies die sws moeten worden aangeroepen voor de inforgraphic:
-    average_parkingtime_per_vehicletype_in_minutes(json_data)
-    average_distance_travelled_per_vehicletype_in_meters(json_data)
+    # functies die sws moeten worden aangeroepen voor de infographic:
+    chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_minutes(json_data)
+    chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
+
+    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data, "neighborhood")
+    # TODO: Top 5 Hubs
+
+    chosen_details["total_amount_vehicles"] = total_amount_vehicles()
+    chosen_details["total_vehicles_rented"] = total_vehicles_rented()
 
     # optionele functies
     for key, value in json_details.items():
@@ -65,7 +71,7 @@ def select_details(json_data):
           case _:
             chosen_details = None
 
-      return chosen_details
+    return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
   ids = zone_ids_per_municipality(municipality)
@@ -137,7 +143,9 @@ def total_amount_hubs(json_data):
 
 def get_service_providers():
   # TODO: Implement service providers
-  return [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }] # Mock data
+  operators = user_info().get("operators")
+  operator_names = [operators["name"] for operators in operators]
+  return operator_names
 
 # Amount of vehicles available in a municipality
 def amount_vehicles(json_data):
@@ -151,6 +159,18 @@ def amount_vehicles(json_data):
     response = json.loads(response_str.content)
 
     return response
+
+def total_amount_vehicles():
+  json_data = vehicles_in_zone_per_day()
+  sum_dict = {}
+  for item in json_data["available_vehicles_aggregated_stats"]["values"]:
+    for key, value in item.items():
+        if key != "start_interval":
+          if key in sum_dict:
+            sum_dict[key] += value
+          else:
+            sum_dict[key] = value
+  return sum_dict
 
 def total_vehicles_rented():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
@@ -323,19 +343,40 @@ def hubs_by_municipality(GM_code):
   response = json.loads(response_str.content)
   return response
 
-# print(data_sort({
-#   "municipality": "Rotterdam",
-#   "details": {
-#     "amount_vehicles": True,
-#     "distance_travelled": True,
-#     "rentals": True,
-#     "zone_occupation": True,
-#     "hubs": False
-#   },
-#     "areas": [],
-#     "timeslot": {
-#         "start_date": "2024-03-03",
-#         "end_date": "2024-04-02"
-#     },
-#     "time_format": "daily"
-# }))
+data = {
+  "municipality": "Rotterdam",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": False
+  },
+  "areas": [],
+  "timeslot": {
+    "start_date": "2024-03-03",
+    "end_date": "2024-04-02"
+  },
+  "time_format": "daily"
+}
+
+#print(validate_municipality("Rotterdam"))
+
+#print(get_service_providers())
+
+print(data_sort({
+  "municipality": "Rotterdam",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": True
+  },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}))

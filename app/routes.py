@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from app.services import data_sort
 
@@ -9,8 +9,7 @@ CORS(app)
 def controller():
     try:
         data = request.get_json()
-        print(data)
         result = data_sort(data)
-        return result
+        return send_file(result, mimetype='application/pdf')
     except Exception as e:
         return jsonify(message=str(e)), 500
