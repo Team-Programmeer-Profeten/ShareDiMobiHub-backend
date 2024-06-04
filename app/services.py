@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
-from .pdf_generator import create_pdf
+from pdf_generator import create_pdf
 from graphs import barchart_horizontal, barchart_vertical
 from bokeh.io import export_svgs, export_png
 
@@ -40,14 +40,13 @@ def select_details(json_data):
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de infographic:
     parkingtime_data = chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_minutes(json_data)
-    parkingtime_graph = barchart_vertical(list(parkingtime_data.keys()), list(parkingtime_data.values()) , 300, 300)
-    export_png(parkingtime_graph, filename="plot.png")
+    # parkingtime_graph = barchart_vertical(list(parkingtime_data.keys()), list(parkingtime_data.values()) , 300, 300)
     # parkingtime_graph.output_backend = "svg"
     # export_svgs(parkingtime_graph, filename = 'test.svg')
 
     chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
 
-    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data, "neighborhood")
+    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data) #, "neighborhood")
     # TODO: Top 5 Hubs
 
     chosen_details["total_amount_vehicles"] = total_amount_vehicles()
@@ -370,20 +369,20 @@ data = {
 #print(validate_municipality("Rotterdam"))
 
 # print(top_5_zones_rented(data, "neighborhood"))
-print(select_details(data))
-# print(data_sort({
-#   "municipality": "Rotterdam",
-#   "details": {
-#     "amount_vehicles": True,
-#     "distance_travelled": True,
-#     "rentals": True,
-#     "zone_occupation": True,
-#     "hubs": False
-#   },
-#     "areas": [],
-#     "timeslot": {
-#         "start_date": "2024-03-03",
-#         "end_date": "2024-04-02"
-#     },
-#     "time_format": "daily"
-# }))
+# print(select_details(data))
+print(data_sort({
+  "municipality": "Rotterdam",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": False
+  },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}))

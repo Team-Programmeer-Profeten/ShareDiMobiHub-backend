@@ -2,6 +2,11 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import A4
+from reportlab.graphics import renderPDF
+
+import svglib.svglib as svglib
+
+from graphs import barchart_horizontal, barchart_vertical
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -10,6 +15,7 @@ import os
 from datetime import datetime
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+graph_path = os.path.join(dir_path, 'utils', 'graphs', 'SVG_')
 
 # Register a new font for the PDF
 pdfmetrics.registerFont(TTFont('Poppins', os.path.join(dir_path, 'utils', 'fonts', 'Poppins-Regular.ttf')))
@@ -70,8 +76,13 @@ def create_overlay(data):
         c.drawString(x, y, f"- {provider}")
     
     # avg distance travelled in meters
+    distance_data = data["avg_distance_travelled"]
+    barchart_vertical(list(distance_data.keys()), list(distance_data.values()) , 300, 300, "avg_distance")
+    distance_svg = svglib.svg2rlg(graph_path + "avg_distance" + ".svg")
+    renderPDF.draw(distance_svg, c, 60, 450)
+    
     c.setFont("Poppins", 10)
-    avg_distance_str = ', '.join(f'{k}: {v}' for k, v in data["avg_distance_travelled"].items())
+    avg_distance_str = ', '.join(f'{k}: {v}' for k, v in distance_data.items())
     c.drawString(60, 450, avg_distance_str)
 
     # avg parking time in minutes
