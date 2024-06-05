@@ -39,15 +39,11 @@ def select_details(json_data):
 
     json_details = json_data.get("details")
     # functies die sws moeten worden aangeroepen voor de infographic:
-    parkingtime_data = chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_minutes(json_data)
-    # parkingtime_graph = barchart_vertical(list(parkingtime_data.keys()), list(parkingtime_data.values()) , 300, 300)
-    # parkingtime_graph.output_backend = "svg"
-    # export_svgs(parkingtime_graph, filename = 'test.svg')
-
+    chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_hours(json_data)
     chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
 
-    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data) #, "neighborhood")
-    # TODO: Top 5 Hubs
+    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data)
+    chosen_details["top_5_hubs"] = top_5_hubs_rented(json_data)
 
     chosen_details["total_amount_vehicles"] = total_amount_vehicles()
     chosen_details["total_vehicles_rented"] = total_vehicles_rented()
@@ -92,7 +88,7 @@ def zone_ids_per_municipality(municipality):
   ids = [zone.get("zone_id") for zone in zones] # we assume a list of zone ids can be used in the api call, using a comma as separator
   return ids
 
-def average_parkingtime_per_vehicletype_in_minutes(selectedDetails):
+def average_parkingtime_per_vehicletype_in_hours(selectedDetails):
   # relevant parking data for the selected municipality and timeframe
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   vehicleTypeCount = defaultdict(int)
@@ -111,7 +107,8 @@ def average_parkingtime_per_vehicletype_in_minutes(selectedDetails):
   for vehicleType in sumPerVehicleType:
     average_seconds = round(sumPerVehicleType[vehicleType].total_seconds() / vehicleTypeCount[vehicleType], 3)
     average_minutes = average_seconds / 60
-    averagePerVehicleType[vehicleType] = average_minutes
+    average_hours = round(average_minutes / 60, 2)
+    averagePerVehicleType[vehicleType] = average_hours
   return dict(averagePerVehicleType)
 
 def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
@@ -128,7 +125,7 @@ def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     # calculate average
     averagePerVehicleType = defaultdict(int)
     for vehicleType in sumPerVehicleType:
-        averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 3)
+        averagePerVehicleType[vehicleType] = round(sumPerVehicleType[vehicleType] / vehicleTypeCount[vehicleType], 2)
     return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
@@ -368,7 +365,7 @@ data = {
 
 #print(validate_municipality("Rotterdam"))
 
-# print(top_5_zones_rented(data, "neighborhood"))
+# print(top_5_hubs_rented(data))
 # print(select_details(data))
 print(data_sort({
   "municipality": "Rotterdam",
@@ -377,7 +374,7 @@ print(data_sort({
     "distance_travelled": True,
     "rentals": True,
     "zone_occupation": True,
-    "hubs": False
+    "hubs": True
   },
     "areas": [],
     "timeslot": {

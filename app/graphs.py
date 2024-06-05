@@ -2,17 +2,24 @@ import os
 from bokeh.plotting import figure, save
 from bokeh.resources import CDN
 from bokeh.embed import file_html
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.io import export_svgs, export_png
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = os.path.join(dir_path, 'utils', 'graphs', 'SVG_')
 
-def barchart_vertical(categories, data, width, height, name):
+def barchart_vertical(categories, data, width, height, name, x_axis_label, y_axis_label):
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=categories, y=data, color=color))
   p = figure(x_range=categories, width=width, height=height)
   p.vbar(x="x", top="y", color="color", width=0.9, source=source)
+  
+  labels = LabelSet(x='x', y='y', text='y', level='glyph', text_font_size='8px', y_offset=-20, source=source)
+  p.add_layout(labels)
+
+  p.xaxis.axis_label = x_axis_label
+  p.yaxis.axis_label = y_axis_label
+
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
@@ -21,6 +28,12 @@ def barchart_horizontal(categories, data, width, height, name):
   source = ColumnDataSource(data=dict(x=data, y=categories, color=color))
   p = figure(y_range=categories, width=width, height=height)
   p.hbar(y="y", right="x", color="color", height=0.9, source=source)
+  
+  labels = LabelSet(x='x', y='y', text='x', level='glyph', text_font_size='10px', x_offset=-50, source=source)
+  p.add_layout(labels)
+
+  p.xaxis.axis_label = "Aantal verhuringen"
+
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
