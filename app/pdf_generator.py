@@ -77,7 +77,7 @@ def create_overlay(data):
     
     # avg distance travelled in meters
     distance_data = data["avg_distance_travelled"]
-    barchart_vertical(list(distance_data.keys()), list(distance_data.values()) , 300, 300, "avg_distance")
+    barchart_vertical(list(distance_data.keys()), list(distance_data.values()) , 200, 200, "avg_distance")
     distance_svg = svglib.svg2rlg(graph_path + "avg_distance" + ".svg")
     renderPDF.draw(distance_svg, c, 60, 450)
     
@@ -86,25 +86,45 @@ def create_overlay(data):
     c.drawString(60, 450, avg_distance_str)
 
     # avg parking time in minutes
+    parking_data = data["avg_parking_time"]
+    barchart_vertical(list(parking_data.keys()), list(parking_data.values()), 200, 200, "avg_parking_time")
+    parking_svg = svglib.svg2rlg(graph_path + "avg_parking_time" + ".svg")
+    renderPDF.draw(parking_svg, c, 60, 200)
+
     c.setFont("Poppins", 10)
     start_y = 200
-    for i, (k, v) in enumerate(data["avg_parking_time"].items()):
+    for i, (k, v) in enumerate(parking_data.items()):
         c.drawString(60, start_y - i*10, f'{k}: {v} minutes')
 
     # top 5 zones rented
+    zones_data = data["top_5_zones_rented"]["top5"]
+    barchart_horizontal(list(zones_data.keys()), list(zones_data.values()), 200, 200, "top_5_zones")
+    zones_svg = svglib.svg2rlg(graph_path + "top_5_zones" + ".svg")
+    renderPDF.draw(zones_svg, c, 350, 300)
+
     c.setFont("Poppins", 10)
     start_y = 300
-    for i, (k, v) in enumerate(data["top_5_zones_rented"]["top5"].items()):
+    for i, (k, v) in enumerate(zones_data.items()):
         c.drawString(350, start_y - i*10, f'{k}: {v}')
 
     # total amount of vehicles
+    vehicle_data = data["total_amount_vehicles"]
+    barchart_horizontal(list(vehicle_data.keys()), list(vehicle_data.values()), 200, 200, "total_vehicles")
+    vehicle_svg = svglib.svg2rlg(graph_path + "total_vehicles" + ".svg")
+    renderPDF.draw(vehicle_svg, c, 340, 110)
+
     c.setFont("Poppins", 10)
-    for i, (k, v) in enumerate(data["total_amount_vehicles"].items()):
+    for i, (k, v) in enumerate(vehicle_data.items()):
         c.drawString(340, 110 - i*12, f'{k}: {v}')
 
     # total amount of rentals
+    rental_data = data["total_vehicles_rented"]
+    barchart_horizontal(list(rental_data.keys()), list(rental_data.values()), 200, 200, "total_rentals")
+    rentals_svg = svglib.svg2rlg(graph_path + "total_rentals" + ".svg")
+    renderPDF.draw(rentals_svg, c, 500, 70)
+
     c.setFont("Poppins", 10)
-    total_rentals_str = ', '.join(f'{k}: {v}' for k, v in data["total_vehicles_rented"].items())
+    total_rentals_str = ', '.join(f'{k}: {v}' for k, v in rental_data.items())
     c.drawString(500, 70, total_rentals_str)
 
 

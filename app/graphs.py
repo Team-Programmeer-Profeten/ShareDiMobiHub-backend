@@ -12,7 +12,7 @@ def barchart_vertical(categories, data, width, height, name):
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=categories, y=data, color=color))
   p = figure(x_range=categories, width=width, height=height)
-  p.vbar(x="x", top="y", color="color", width=0.9, legend_field="x", source=source)
+  p.vbar(x="x", top="y", color="color", width=0.9, source=source)
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
@@ -20,7 +20,7 @@ def barchart_horizontal(categories, data, width, height, name):
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=data, y=categories, color=color))
   p = figure(y_range=categories, width=width, height=height)
-  p.hbar(y="y", right="x", color="color", height=0.9, legend_field="y", source=source)
+  p.hbar(y="y", right="x", color="color", height=0.9, source=source)
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
