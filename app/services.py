@@ -3,9 +3,7 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
-from pdf_generator import create_pdf
-from graphs import barchart_horizontal, barchart_vertical
-from bokeh.io import export_svgs, export_png
+from .pdf_generator import create_pdf
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -367,19 +365,19 @@ data = {
 
 # print(top_5_hubs_rented(data))
 # print(select_details(data))
-print(data_sort({
-  "municipality": "Rotterdam",
-  "details": {
-    "amount_vehicles": True,
-    "distance_travelled": True,
-    "rentals": True,
-    "zone_occupation": True,
-    "hubs": True
-  },
-    "areas": [],
-    "timeslot": {
-        "start_date": "2024-03-03",
-        "end_date": "2024-04-02"
-    },
-    "time_format": "daily"
-}))
+# print(data_sort({
+#   "municipality": "Rotterdam",
+#   "details": {
+#     "amount_vehicles": True,
+#     "distance_travelled": True,
+#     "rentals": True,
+#     "zone_occupation": True,
+#     "hubs": True
+#   },
+#     "areas": [],
+#     "timeslot": {
+#         "start_date": "2024-03-03",
+#         "end_date": "2024-04-02"
+#     },
+#     "time_format": "daily"
+# }))
