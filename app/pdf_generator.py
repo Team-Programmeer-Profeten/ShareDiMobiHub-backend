@@ -6,7 +6,7 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-from graphs import barchart_horizontal, barchart_vertical
+from graphs import barchart_horizontal, barchart_vertical, piechart
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -129,15 +129,15 @@ def create_overlay(data):
 
     # total amount of vehicles
     vehicle_data = data["total_amount_vehicles"]
-    barchart_horizontal(list(vehicle_data.keys()), list(vehicle_data.values()), 200, 200, "total_vehicles")
+    piechart(vehicle_data, 500, 500, "total_vehicles")
     vehicle_svg = svglib.svg2rlg(graph_path + "total_vehicles" + ".svg")
 
-    scale_factor = 0.5
+    scale_factor = 0.43
     vehicle_svg.width = vehicle_svg.width * scale_factor
     vehicle_svg.height = vehicle_svg.height * scale_factor
     vehicle_svg.scale(scale_factor, scale_factor)
 
-    renderPDF.draw(vehicle_svg, c, 340, 10)
+    renderPDF.draw(vehicle_svg, c, 313, -42)
 
     # c.setFont("Poppins", 10)
     # for i, (k, v) in enumerate(vehicle_data.items()):
@@ -145,19 +145,19 @@ def create_overlay(data):
 
     # total amount of rentals
     rental_data = data["total_vehicles_rented"]
-    barchart_horizontal(list(rental_data.keys()), list(rental_data.values()), 200, 200, "total_rentals")
-    rentals_svg = svglib.svg2rlg(graph_path + "total_rentals" + ".svg")
+    # barchart_horizontal(list(rental_data.keys()), list(rental_data.values()), 200, 200, "total_rentals")
+    # rentals_svg = svglib.svg2rlg(graph_path + "total_rentals" + ".svg")
 
-    scale_factor = 0.5
-    rentals_svg.width = rentals_svg.width * scale_factor
-    rentals_svg.height = rentals_svg.height * scale_factor
-    rentals_svg.scale(scale_factor, scale_factor)
+    # scale_factor = 0.5
+    # rentals_svg.width = rentals_svg.width * scale_factor
+    # rentals_svg.height = rentals_svg.height * scale_factor
+    # rentals_svg.scale(scale_factor, scale_factor)
 
-    renderPDF.draw(rentals_svg, c, 480, 10)
+    # renderPDF.draw(rentals_svg, c, 480, 10)
 
-    # c.setFont("Poppins", 10)
-    # total_rentals_str = ', '.join(f'{k}: {v}' for k, v in rental_data.items())
-    # c.drawString(500, 70, total_rentals_str)
+    c.setFont("Poppins-ExtraBold", 12)
+    total_rentals_str = ', '.join(f'{v}' for k, v in rental_data.items())
+    c.drawString(518, 108, total_rentals_str)
 
 
     # Maak de pagina en sluit de canvas

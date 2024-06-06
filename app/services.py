@@ -107,7 +107,7 @@ def average_parkingtime_per_vehicletype_in_hours(selectedDetails):
   for vehicleType in sumPerVehicleType:
     average_seconds = round(sumPerVehicleType[vehicleType].total_seconds() / vehicleTypeCount[vehicleType], 3)
     average_minutes = average_seconds / 60
-    average_hours = round(average_minutes / 60, 2)
+    average_hours = round(average_minutes / 60, 1)
     averagePerVehicleType[vehicleType] = average_hours
   return dict(averagePerVehicleType)
 
