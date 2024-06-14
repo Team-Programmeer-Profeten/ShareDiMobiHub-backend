@@ -215,7 +215,14 @@ def timeslot_from_json(json_str):
 def time_format_from_json(json):
   data = json.loads(json)
   time_format = data["time_format"]
-  return time_format
+  return dict(time_format)
+
+def rentals_selected_neighbourhoods_per_day():
+  # echte api de gewenste dagen meegeven en de zone_ids
+  vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+  return vehiclesRentedPerDay
+
+print(rentals_selected_neighbourhoods_per_day())
 
 
 data = {
