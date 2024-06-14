@@ -1,4 +1,7 @@
 app/__pycache__/
 .venv/
+.vscode/
 
-node_modules
+app/utils/graphs/*
+app/utils/filled_infographic.pdf
+app/utils/overlay.pdf

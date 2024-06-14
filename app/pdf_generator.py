@@ -6,13 +6,11 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-from .graphs import barchart_horizontal, barchart_vertical, piechart
+from graphs import barchart_horizontal, barchart_vertical, piechart
 
 from PyPDF2 import PdfReader, PdfWriter
 
 import os
-
-from datetime import datetime
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = os.path.join(dir_path, 'utils', 'graphs', 'SVG_')
@@ -32,7 +30,6 @@ def create_overlay(data):
     
     # Municipality
     c.setFont("Poppins", 28)
-    # Hexcode: DCEEFB
     c.setFillColorRGB(0.8627, 0.9333, 0.9843)
     c.drawString(320, 783, f"{data['municipality']}")
     
@@ -45,14 +42,12 @@ def create_overlay(data):
 
     # Topics
     c.setFont("Poppins-SemiBold", 8)
-    # Hexcode: 0A1A29
     c.setFillColorRGB(0.0392, 0.1019, 0.1608)
     for i, topic in enumerate(data['topics']):
         c.drawString(60, 659 - (i * 13.6), f"{topic}")
 
     # Amount of hubs
     c.setFont("Poppins-ExtraBold", 36)
-    # Hexcode: 0A1A29
     c.setFillColorRGB(0.0392, 0.1019, 0.1608)
     if data['amount_hubs'] <= 99:
         c.drawString(262, 602, f"{data['amount_hubs']}")
@@ -61,12 +56,12 @@ def create_overlay(data):
         c.drawString(260, 603, f"{data['amount_hubs']}")
 
     # Service providers
-    c.setFont("Poppins", 8)  # Set font size to 6
-    columns = 7  # Number of items per column
-    column_width = 100  # Width of each column
-    start_x = 330  # Starting x-position
-    start_y = 675  # Starting y-position
-    line_height = 16  # Height of each line
+    c.setFont("Poppins", 8)
+    columns = 7
+    column_width = 100
+    start_x = 330
+    start_y = 675
+    line_height = 16
 
     for i, provider in enumerate(data['service_providers']):
         column = i // columns
@@ -80,10 +75,6 @@ def create_overlay(data):
     barchart_vertical(list(distance_data.keys()), list(distance_data.values()) , 270, 190, "avg_distance", "Voertuig types", "Afstand (m)")
     distance_svg = svglib.svg2rlg(graph_path + "avg_distance" + ".svg")
     renderPDF.draw(distance_svg, c, 20, 312)
-    
-    # c.setFont("Poppins", 10)
-    # avg_distance_str = ', '.join(f'{k}: {v}' for k, v in distance_data.items())
-    # c.drawString(60, 450, avg_distance_str)
 
     # avg parking time in minutes
     parking_data = data["avg_parking_time"]
@@ -91,18 +82,13 @@ def create_overlay(data):
     parking_svg = svglib.svg2rlg(graph_path + "avg_parking_time" + ".svg")
     renderPDF.draw(parking_svg, c, 20, 28)
 
-    # c.setFont("Poppins", 10)
-    # start_y = 200
-    # for i, (k, v) in enumerate(parking_data.items()):
-    #     c.drawString(60, start_y - i*10, f'{k}: {v} minutes')
-
     # top 5 hubs
     hubs_data = data["top_5_hubs"]["top5"]
     barchart_horizontal(list(hubs_data.keys()), list(hubs_data.values()), 450, 200, "top_5_hubs")
     hubs_svg = svglib.svg2rlg(graph_path + "top_5_hubs" + ".svg")
 
     # Scale down the SVG
-    scale_factor = 0.55  # Adjust this value to your needs
+    scale_factor = 0.55
     hubs_svg.width = hubs_svg.width * scale_factor
     hubs_svg.height = hubs_svg.height * scale_factor
     hubs_svg.scale(scale_factor, scale_factor)
@@ -115,17 +101,12 @@ def create_overlay(data):
     zones_svg = svglib.svg2rlg(graph_path + "top_5_zones" + ".svg")
 
     # Scale down the SVG
-    scale_factor = 0.55  # Adjust this value to your needs
+    scale_factor = 0.55
     zones_svg.width = zones_svg.width * scale_factor
     zones_svg.height = zones_svg.height * scale_factor
     zones_svg.scale(scale_factor, scale_factor)
 
     renderPDF.draw(zones_svg, c, 330, 200)
-
-    # c.setFont("Poppins", 10)
-    # start_y = 300
-    # for i, (k, v) in enumerate(zones_data.items()):
-    #     c.drawString(350, start_y - i*10, f'{k}: {v}')
 
     # total amount of vehicles
     vehicle_data = data["total_amount_vehicles"]
@@ -139,43 +120,17 @@ def create_overlay(data):
 
     renderPDF.draw(vehicle_svg, c, 313, -42)
 
-    # c.setFont("Poppins", 10)
-    # for i, (k, v) in enumerate(vehicle_data.items()):
-    #     c.drawString(340, 110 - i*12, f'{k}: {v}')
-
     # total amount of rentals
     rental_data = data["total_vehicles_rented"]
-    # barchart_horizontal(list(rental_data.keys()), list(rental_data.values()), 200, 200, "total_rentals")
-    # rentals_svg = svglib.svg2rlg(graph_path + "total_rentals" + ".svg")
-
-    # scale_factor = 0.5
-    # rentals_svg.width = rentals_svg.width * scale_factor
-    # rentals_svg.height = rentals_svg.height * scale_factor
-    # rentals_svg.scale(scale_factor, scale_factor)
-
-    # renderPDF.draw(rentals_svg, c, 480, 10)
 
     c.setFont("Poppins-ExtraBold", 12)
     total_rentals_str = ', '.join(f'{v}' for k, v in rental_data.items())
     c.drawString(518, 108, total_rentals_str)
 
-
-    # Maak de pagina en sluit de canvas
     c.showPage()
     c.save()
     
     return overlay_path
-
-# De gegevens die we willen toevoegen
-# data = {
-#     'municipality': 'Utrecht',
-#     'time_period': 'Maart-April',
-#     'date': datetime.now().strftime("%d-%m-%Y"),
-#     'topics': ['Hoeveelheid voertuigen', 'Afstand afgelegd', 'Verhuringen', 'Zone bezetting', 'Hubs'],
-#     'amount_hubs': '32',
-#     'service_providers': [{ 'name': 'Cargoroo', 'type': 'Fiets' }, { 'name': 'Tier', 'type': 'Fiets'}, { 'name': 'Check', 'type': 'Scooter, Auto' }, { 'name': 'Donkey', 'type': 'Fiets' }, { 'name': 'Felyx', 'type': 'Scooter' }],
-#     # Voeg meer data toe als dat nodig is
-# }
 
 def create_pdf(data):
     # Maak een PDF met nieuwe inhoud
