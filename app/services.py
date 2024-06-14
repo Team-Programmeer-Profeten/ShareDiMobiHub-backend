@@ -49,7 +49,7 @@ def select_details(json_data):
     # optional details
     for key, value in json_details.items():
       if(value):
-        match(key):
+        match key:
           case "amount_vehicles":
             chosen_details["topics"].append("Hoeveelheid Voertuigen")
             chosen_details["amount_vehicles"] = vehicles_in_zone_per_day()
