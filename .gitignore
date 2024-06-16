@@ -3,5 +3,6 @@ app/__pycache__/
 .vscode/
 
 app/utils/graphs/*
+app/utils/topics/*
 app/utils/filled_infographic.pdf
 app/utils/overlay.pdf
