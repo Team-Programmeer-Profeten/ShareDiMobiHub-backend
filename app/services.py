@@ -1,5 +1,7 @@
 import json
 from datetime import datetime
+from time import strftime
+from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
 from pdf_generator import create_pdf
@@ -230,6 +232,29 @@ def rentals_selected_neighbourhoods_per_day():
   return total_per_day
 
 
+def distance_covered_halfyears(selected_data):
+    municipality = find_municipality_gmcode(selected_data["municipality"])
+    distance_data = []
+
+    current_date = datetime.now()
+    previous_date = datetime.now()
+
+    # Loop through the last 2 years in 6 month intervals
+    for i in range(6, 25, 6):
+        start_date = current_date - relativedelta(months=i)
+        end_date = previous_date
+        travel_data = location_distance_moved(municipality, start_date, end_date).get("trip_destinations")
+        total_distance = 0
+        for trip in travel_data:
+            total_distance += trip["distance_in_meters"]
+
+        timeframe_str = f"{start_date.strftime('%d-%m-%y')} | {end_date.strftime('%d-%m-%y')}"
+        distance_data.append({"timeframe": timeframe_str, "distance": total_distance})
+
+        previous_date = start_date
+
+    return distance_data
+
 data = {
   "municipality": "Rotterdam",
   "details": {
@@ -246,6 +271,8 @@ data = {
   },
   "time_format": "daily"
 }
+
+print(distance_covered_halfyears(data))
 
 
 print(data_sort({
