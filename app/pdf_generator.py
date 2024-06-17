@@ -132,6 +132,120 @@ def create_overlay(data):
     
     return overlay_path
 
+def add_page(data, writer):
+    if 'topics' in data:
+        for topic in data['topics']:
+            if topic == 'Hoeveelheid Voertuigen':
+                amount_vehicles = os.path.join(dir_path, 'utils', 'topics', 'amount_vehicles_overlay.pdf')
+                c = canvas.Canvas(amount_vehicles, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(130, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(amount_vehicles)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Afstand Afgelegd':
+                distance_travelled = os.path.join(dir_path, 'utils', 'topics', 'distance_travelled_overlay.pdf')
+                c = canvas.Canvas(distance_travelled, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(170, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(distance_travelled)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Verhuringen':
+                rentals = os.path.join(dir_path, 'utils', 'topics', 'rentals_overlay.pdf')
+                c = canvas.Canvas(rentals, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(200, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(rentals)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Zone Bezetting':
+                zone_occupation = os.path.join(dir_path, 'utils', 'topics', 'zone_occupation_overlay.pdf')
+                c = canvas.Canvas(zone_occupation, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(190, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(zone_occupation)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Hubs':
+                hubs = os.path.join(dir_path, 'utils', 'topics', 'hubs_overlay.pdf')
+                c = canvas.Canvas(hubs, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(250, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(hubs)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+    
+
 def create_pdf(data):
     # Maak een PDF met nieuwe inhoud
     overlay_pdf_path = create_overlay(data)
@@ -153,6 +267,8 @@ def create_pdf(data):
 
     # Voeg de samengestelde pagina toe aan de PdfWriter
     writer.add_page(first_page)
+
+    add_page(data, writer)
 
     # Schrijf de nieuwe samengestelde PDF
     new_pdf_path = os.path.join(dir_path, 'utils', 'filled_infographic.pdf')
