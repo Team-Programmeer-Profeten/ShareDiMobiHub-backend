@@ -102,6 +102,26 @@ def average_parkingtime_per_vehicletype_in_hours(selectedDetails):
     averagePerVehicleType[vehicleType] = average_hours
   return dict(averagePerVehicleType)
 
+def average_parkingtime_per_provider_in_hours(selectedDetails):
+  park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
+  provider_count = defaultdict(int)
+  sum_per_provider = defaultdict(dt.timedelta)
+  for parkEvent in park_event_data["park_events"]:
+    if(parkEvent["end_time"] is None or parkEvent["start_time"] is None):
+      continue
+    start_time = dt.datetime.strptime(parkEvent["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    end_time = dt.datetime.strptime(parkEvent["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+    sum_per_provider[parkEvent["system_id"]] += end_time - start_time
+    provider_count[parkEvent["system_id"]] += 1
+
+  avaragePerProvider = defaultdict(dt.timedelta)
+  for provider in sum_per_provider:
+    average_seconds = round(sum_per_provider[provider].total_seconds() / provider_count[provider], 3)
+    average_minutes = average_seconds / 60
+    average_hours = round(average_minutes / 60, 1)
+    avaragePerProvider[provider] = average_hours
+  return dict(avaragePerProvider)
+
 def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     municipality_ids = zone_ids_per_municipality(selectedDetails.get("municipality"))
     distance_travelled_data = location_distance_moved(municipality_ids, selectedDetails.get("timeslot").get("start_date"), selectedDetails.get("timeslot").get("end_date")).get("trip_destinations")
@@ -222,7 +242,7 @@ def time_format_from_json(json):
 def rentals_selected_neighbourhoods_per_day():
   # echte api de gewenste dagen meegeven en de zone_ids
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
-  
+
   total_per_day = {}
   for day in vehiclesRentedPerDay:
       total = sum(value for key, value in day.items() if key != 'start_interval')
