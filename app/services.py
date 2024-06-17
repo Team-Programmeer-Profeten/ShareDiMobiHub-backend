@@ -63,7 +63,7 @@ def select_details(json_data):
             chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
           case "zone_occupation":
             chosen_details["topics"].append("Zone Bezetting")
-            chosen_details["zone_occupation"] = park_events(json_data.get("zone_ids"), json_data.get("timestamp"))
+            chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
           case "hubs":
             chosen_details["topics"].append("Hubs")
             chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality"))

@@ -84,7 +84,7 @@ def create_overlay(data):
 
     # top 5 hubs
     hubs_data = data["top_5_hubs"]["top5"]
-    barchart_horizontal(list(hubs_data.keys()), list(hubs_data.values()), 450, 200, "top_5_hubs")
+    barchart_horizontal(list(hubs_data.keys()), list(hubs_data.values()), 450, 200, "top_5_hubs", "Aantal verhuringen")
     hubs_svg = svglib.svg2rlg(graph_path + "top_5_hubs" + ".svg")
 
     # Scale down the SVG
@@ -97,7 +97,7 @@ def create_overlay(data):
 
     # top 5 zones rented
     zones_data = data["top_5_zones_rented"]["top5"]
-    barchart_horizontal(list(zones_data.keys()), list(zones_data.values()), 450, 200, "top_5_zones")
+    barchart_horizontal(list(zones_data.keys()), list(zones_data.values()), 450, 200, "top_5_zones", "Aantal verhuringen")
     zones_svg = svglib.svg2rlg(graph_path + "top_5_zones" + ".svg")
 
     # Scale down the SVG
@@ -227,6 +227,16 @@ def add_page(data, writer):
                 c.setFont("Poppins", 28)
                 c.setFillColorRGB(0.8627, 0.9333, 0.9843)
                 c.drawString(190, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 660, "Gemiddelde parkeertijd per service provider")
+
+                avg_parkingtime_per_provider = data["avg_parkingtime_per_provider"]
+                barchart_horizontal(list(avg_parkingtime_per_provider.keys()), list(avg_parkingtime_per_provider.values()), 450, 200, "avg_parkingtime_per_provider", "Parkeertijd (h)")
+                avg_parkingtime_per_provider_svg = svglib.svg2rlg(graph_path + "avg_parkingtime_per_provider" + ".svg")
+                renderPDF.draw(avg_parkingtime_per_provider_svg, c, 20, 450)
+
                 c.showPage()
                 c.save()
     

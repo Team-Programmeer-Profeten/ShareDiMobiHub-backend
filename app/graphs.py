@@ -29,7 +29,7 @@ def barchart_vertical(categories, data, width, height, name, x_axis_label, y_axi
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
-def barchart_horizontal(categories, data, width, height, name):
+def barchart_horizontal(categories, data, width, height, name, y_axis_label):
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=data, y=categories, color=color))
   p = figure(y_range=categories, width=width, height=height, background_fill_color=None, border_fill_color=None)
@@ -38,7 +38,7 @@ def barchart_horizontal(categories, data, width, height, name):
   labels = LabelSet(x='x', y='y', text='x', level='glyph', text_font_size='10px', text_color='#0A1A29', x_offset=-50, source=source)
   p.add_layout(labels)
 
-  p.xaxis.axis_label = "Aantal verhuringen"
+  p.xaxis.axis_label = y_axis_label
 
   p.xaxis.axis_label_text_font = "Poppins"
   p.xaxis.axis_label_text_color = "#0A1A29"
