@@ -58,7 +58,7 @@ def select_details(json_data):
             chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time"))
           case "rentals":
             chosen_details["topics"].append("Verhuringen")
-            chosen_details["rentals"] = total_vehicles_rented_per_time_period()
+            chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
           case "zone_occupation":
             chosen_details["topics"].append("Zone Bezetting")
             chosen_details["zone_occupation"] = park_events(json_data.get("zone_ids"), json_data.get("timestamp"))
@@ -220,9 +220,14 @@ def time_format_from_json(json):
 def rentals_selected_neighbourhoods_per_day():
   # echte api de gewenste dagen meegeven en de zone_ids
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
-  return vehiclesRentedPerDay
+  
+  total_per_day = {}
+  for day in vehiclesRentedPerDay:
+      total = sum(value for key, value in day.items() if key != 'start_interval')
+      date = datetime.strptime(day['start_interval'], "%Y-%m-%d %H:%M:%S%z").strftime("%d-%m")
+      total_per_day[date] = total
 
-print(rentals_selected_neighbourhoods_per_day())
+  return total_per_day
 
 
 data = {
@@ -243,19 +248,19 @@ data = {
 }
 
 
-# print(data_sort({
-#   "municipality": "Rotterdam",
-#   "details": {
-#     "amount_vehicles": True,
-#     "distance_travelled": True,
-#     "rentals": True,
-#     "zone_occupation": True,
-#     "hubs": True
-#   },
-#     "areas": [],
-#     "timeslot": {
-#         "start_date": "2024-03-03",
-#         "end_date": "2024-04-02"
-#     },
-#     "time_format": "daily"
-# }))
+print(data_sort({
+  "municipality": "Rotterdam",
+  "details": {
+    "amount_vehicles": True,
+    "distance_travelled": True,
+    "rentals": True,
+    "zone_occupation": True,
+    "hubs": True
+  },
+    "areas": [],
+    "timeslot": {
+        "start_date": "2024-03-03",
+        "end_date": "2024-04-02"
+    },
+    "time_format": "daily"
+}))

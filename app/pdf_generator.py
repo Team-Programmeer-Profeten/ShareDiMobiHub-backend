@@ -185,6 +185,16 @@ def add_page(data, writer):
                 c.setFont("Poppins", 28)
                 c.setFillColorRGB(0.8627, 0.9333, 0.9843)
                 c.drawString(200, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(100, 660, "Verhuringen per dag")
+
+                rented_neighbourhoods_data = data["rentals_neighbourhoods"]
+                barchart_vertical(list(rented_neighbourhoods_data.keys()), list(rented_neighbourhoods_data.values()), 300, 250, "rentals_neighbourhoods", "Dag", "Aantal")
+                rentals_svg = svglib.svg2rlg(graph_path + "rentals_neighbourhoods" + ".svg")
+                renderPDF.draw(rentals_svg, c, 20, 395)
+
                 c.showPage()
                 c.save()
     
