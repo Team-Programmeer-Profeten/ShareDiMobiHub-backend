@@ -57,7 +57,7 @@ def select_details(json_data):
             chosen_details["amount_vehicles"] = vehicles_in_zone_per_day()
           case "distance_travelled":
             chosen_details["topics"].append("Afstand Afgelegd")
-            chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time"))
+            chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
           case "rentals":
             chosen_details["topics"].append("Verhuringen")
             chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
@@ -234,7 +234,7 @@ def rentals_selected_neighbourhoods_per_day():
 
 def distance_covered_halfyears(selected_data):
     municipality = find_municipality_gmcode(selected_data["municipality"])
-    distance_data = []
+    distance_data = {}
 
     current_date = datetime.now()
     previous_date = datetime.now()
@@ -248,8 +248,9 @@ def distance_covered_halfyears(selected_data):
         for trip in travel_data:
             total_distance += trip["distance_in_meters"]
 
-        timeframe_str = f"{start_date.strftime('%d-%m-%y')} | {end_date.strftime('%d-%m-%y')}"
-        distance_data.append({"timeframe": timeframe_str, "distance": total_distance})
+        total_distance = round(total_distance / 1000)
+        timeframe_str = f"{start_date.strftime('%d-%m-%y')} \n {end_date.strftime('%d-%m-%y')}"
+        distance_data[timeframe_str] = total_distance
 
         previous_date = start_date
 
@@ -271,9 +272,6 @@ data = {
   },
   "time_format": "daily"
 }
-
-print(distance_covered_halfyears(data))
-
 
 print(data_sort({
   "municipality": "Rotterdam",

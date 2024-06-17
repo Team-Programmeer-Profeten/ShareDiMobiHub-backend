@@ -163,6 +163,16 @@ def add_page(data, writer):
                 c.setFont("Poppins", 28)
                 c.setFillColorRGB(0.8627, 0.9333, 0.9843)
                 c.drawString(170, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 660, "Afstand afgelegd per half jaar")
+
+                distance_travelled_halfyears = data["distance_travelled_halfyears"]
+                barchart_vertical(list(distance_travelled_halfyears.keys()), list(distance_travelled_halfyears.values()), 350, 250, "distance_travelled_halfyears", "Tijdslot", "Afstand (km)")
+                distance_travelled_svg = svglib.svg2rlg(graph_path + "distance_travelled_halfyears" + ".svg")
+                renderPDF.draw(distance_travelled_svg, c, 20, 395)
+
                 c.showPage()
                 c.save()
     
