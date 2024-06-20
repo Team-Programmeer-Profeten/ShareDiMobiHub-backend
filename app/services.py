@@ -276,6 +276,26 @@ def distance_covered_halfyears(selected_data):
 
     return distance_data
 
+def average_distance_by_provider(selected_data):
+    municipality = find_municipality_gmcode(selected_data["municipality"])
+    start_date = selected_data["timeslot"]["start_date"]
+    end_date = selected_data["timeslot"]["end_date"]
+
+    distance_data = {}
+
+    travel_data = location_distance_moved(municipality, start_date, end_date).get("trip_destinations")
+    providers = []
+    for trip in travel_data:
+        provider = trip["system_id"]
+        if provider not in providers:
+            providers.append(provider)
+
+    for provider in providers:
+        provider_trips = [trip for trip in travel_data if trip["system_id"] == provider]
+        distance_data[provider] = round(sum(trip["distance_in_meters"] for trip in provider_trips) / len(provider_trips))
+
+    return distance_data
+
 data = {
   "municipality": "Rotterdam",
   "details": {
