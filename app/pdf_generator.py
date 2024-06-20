@@ -173,6 +173,15 @@ def add_page(data, writer):
                 distance_travelled_svg = svglib.svg2rlg(graph_path + "distance_travelled_halfyears" + ".svg")
                 renderPDF.draw(distance_travelled_svg, c, 20, 395)
 
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 330, "Gemiddelde afstand per service provider")
+                
+                average_distance_by_provider = data["average_distance_by_provider"]
+                barchart_horizontal(list(average_distance_by_provider.keys()), list(average_distance_by_provider.values()), 450, 200, "average_distance_by_provider", "Afstand (km)")
+                average_distance_by_provider_svg = svglib.svg2rlg(graph_path + "average_distance_by_provider" + ".svg")
+                renderPDF.draw(average_distance_by_provider_svg, c, 18, 120)
+
                 c.showPage()
                 c.save()
     

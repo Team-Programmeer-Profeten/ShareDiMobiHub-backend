@@ -58,6 +58,7 @@ def select_details(json_data):
           case "distance_travelled":
             chosen_details["topics"].append("Afstand Afgelegd")
             chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
+            chosen_details["average_distance_by_provider"] = average_distance_by_provider(json_data)
           case "rentals":
             chosen_details["topics"].append("Verhuringen")
             chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
