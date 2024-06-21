@@ -217,6 +217,12 @@ def time_format_from_json(json):
   time_format = data["time_format"]
   return time_format
 
+def available_vehicles_municipality_total(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  output = map(lambda x: {"y": x.pop("start_interval"), "x": sum(x.values)}, data)
+  return output
+
+print(list(available_vehicles_municipality_total(True, True, True, True)))
 
 data = {
   "municipality": "Rotterdam",
