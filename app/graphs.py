@@ -46,6 +46,20 @@ def barchart_horizontal(categories, data, width, height, name):
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
+def linechart(x, y, width, height, name):
+  p = figure(width=width, height=height, background_fill_color=None, border_fill_color=None)
+  p.line(x, y, line_width = 2)
+  
+  # labels = LabelSet(x='x', y='y', text='x', level='glyph', text_font_size='10px', text_color='#0A1A29', x_offset=-50, source=source)
+  # p.add_layout(labels)
+
+  # p.xaxis.axis_label = "Aantal verhuringen"
+
+  # p.xaxis.axis_label_text_font = "Poppins"
+  # p.xaxis.axis_label_text_color = "#0A1A29"
+
+  p.output_backend = "svg"
+  export_svgs(p, filename = graph_path + name + '.svg')
 
 def piechart(data_dict, width, height, name):
     categories = list(data_dict.keys())
