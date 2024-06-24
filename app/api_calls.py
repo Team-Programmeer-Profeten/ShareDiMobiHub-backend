@@ -107,7 +107,4 @@ def vehicles_in_municipality(GM_code, aggregation, start_time, end_time):
     mockRequest = "https://www.stoopstestdomein.nl/mock-api/8.json"
     response_str = requests.get(mockRequest)
     response = json.loads(response_str.content).get("available_vehicles_aggregated_stats").get("values")
-    print(type(response))
     return response
-
-print(vehicles_in_zone_per_day)

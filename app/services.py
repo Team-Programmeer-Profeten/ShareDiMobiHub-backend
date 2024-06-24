@@ -55,6 +55,7 @@ def select_details(json_data):
           case "amount_vehicles":
             chosen_details["topics"].append("Hoeveelheid Voertuigen")
             chosen_details["amount_vehicles"] = available_vehicles_municipality_total(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+            chosen_details["amount_vehicles_provider"] = available_vehicles_municipality_providers(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
           case "distance_travelled":
             chosen_details["topics"].append("Afstand Afgelegd")
             chosen_details["distance_travelled"] = location_distance_moved(json_data.get("zone_ids"), json_data.get("start_time"), json_data.get("end_time"))
@@ -221,11 +222,19 @@ def time_format_from_json(json):
 
 def available_vehicles_municipality_total(GM_code, aggregation, start_time, end_time):
   data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
-  print(data)
-  output = map(lambda x: {"y": x.pop("start_interval"), "x": sum(x.values())}, data)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": sum(x.values())}, data))
+  output = dict(x = [], y = [])
+  for val in total:
+    output["x"].append(val["x"])
+    output["y"].append(val["y"])
   return output
 
-print(list(available_vehicles_municipality_total(True, True, True, True)))
+def available_vehicles_municipality_providers(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  output = map(lambda x: {"x": x.pop("start_interval"), "y": x}, data)
+  return output
+
+print(available_vehicles_municipality_total(True, True, True, True))
 
 data = {
   "municipality": "Rotterdam",
