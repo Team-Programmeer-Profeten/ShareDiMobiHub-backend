@@ -1,11 +1,9 @@
 import json
 from datetime import datetime
-from time import strftime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
 from pdf_generator import create_pdf
-from collections import OrderedDict
 
 from api_calls import *
 
