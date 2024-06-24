@@ -250,6 +250,16 @@ def add_page(data, writer):
                 avg_parkingtime_per_provider_svg = svglib.svg2rlg(graph_path + "avg_parkingtime_per_provider" + ".svg")
                 renderPDF.draw(avg_parkingtime_per_provider_svg, c, 20, 450)
 
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 365, "Gemiddelde parkeertijd in minuten per half jaar")
+
+                # Average parking time half years
+                avg_parkingtime_halfyears = data["avg_parking_time_half_years"]
+                barchart_vertical(list(avg_parkingtime_halfyears.keys()), list(avg_parkingtime_halfyears.values()), 350, 250, "avg_parking_time_half_years", "Tijdslot", "Tijd (min)")
+                avg_parkingtime_halfyears_svg = svglib.svg2rlg(graph_path + "avg_parking_time_half_years" + ".svg")
+                renderPDF.draw(avg_parkingtime_halfyears_svg, c, 30, 100)
+
                 c.showPage()
                 c.save()
     

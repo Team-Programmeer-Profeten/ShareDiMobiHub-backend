@@ -65,6 +65,7 @@ def select_details(json_data):
           case "zone_occupation":
             chosen_details["topics"].append("Zone Bezetting")
             chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
+            chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
           case "hubs":
             chosen_details["topics"].append("Hubs")
             chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality"))
