@@ -168,6 +168,7 @@ def add_page(data, writer):
                 c.setFillColorRGB(0.0392, 0.1019, 0.1608)
                 c.drawString(80, 660, "Afstand afgelegd per half jaar")
 
+                # Distance travelled per half year
                 distance_travelled_halfyears = data["distance_travelled_halfyears"]
                 barchart_vertical(list(distance_travelled_halfyears.keys()), list(distance_travelled_halfyears.values()), 350, 250, "distance_travelled_halfyears", "Tijdslot", "Afstand (km)")
                 distance_travelled_svg = svglib.svg2rlg(graph_path + "distance_travelled_halfyears" + ".svg")
@@ -177,8 +178,9 @@ def add_page(data, writer):
                 c.setFillColorRGB(0.0392, 0.1019, 0.1608)
                 c.drawString(80, 330, "Gemiddelde afstand per service provider")
                 
+                # Average distance by provider
                 average_distance_by_provider = data["average_distance_by_provider"]
-                barchart_horizontal(list(average_distance_by_provider.keys()), list(average_distance_by_provider.values()), 450, 200, "average_distance_by_provider", "Afstand (km)")
+                barchart_horizontal(list(average_distance_by_provider.keys()), list(average_distance_by_provider.values()), 450, 200, "average_distance_by_provider", "Afstand (m)")
                 average_distance_by_provider_svg = svglib.svg2rlg(graph_path + "average_distance_by_provider" + ".svg")
                 renderPDF.draw(average_distance_by_provider_svg, c, 18, 120)
 
@@ -209,6 +211,7 @@ def add_page(data, writer):
                 c.setFillColorRGB(0.0392, 0.1019, 0.1608)
                 c.drawString(100, 660, "Verhuringen per dag")
 
+                # Rentals per day
                 rented_neighbourhoods_data = data["rentals_neighbourhoods"]
                 barchart_vertical(list(rented_neighbourhoods_data.keys()), list(rented_neighbourhoods_data.values()), 300, 250, "rentals_neighbourhoods", "Dag", "Aantal")
                 rentals_svg = svglib.svg2rlg(graph_path + "rentals_neighbourhoods" + ".svg")
@@ -241,6 +244,7 @@ def add_page(data, writer):
                 c.setFillColorRGB(0.0392, 0.1019, 0.1608)
                 c.drawString(80, 660, "Gemiddelde parkeertijd per service provider")
 
+                # Average parking time by provider
                 avg_parkingtime_per_provider = data["avg_parkingtime_per_provider"]
                 barchart_horizontal(list(avg_parkingtime_per_provider.keys()), list(avg_parkingtime_per_provider.values()), 450, 200, "avg_parkingtime_per_provider", "Parkeertijd (h)")
                 avg_parkingtime_per_provider_svg = svglib.svg2rlg(graph_path + "avg_parkingtime_per_provider" + ".svg")
