@@ -297,6 +297,47 @@ def average_distance_by_provider(selected_data):
 
     return distance_data
 
+def average_parking_time_half_years(selected_data):
+    municipality = selected_data["municipality"]
+    parking_data = {}
+
+    current_date = datetime.now()
+
+    # fill all parking data
+    parking_data = park_events_per_municipality(municipality, None).get("park_events")
+
+    # filter out data that has no end time or start time
+    parking_data = [parking for parking in parking_data if parking["end_time"] and parking["start_time"]]
+
+    average_parking_times = {}
+    # Loop through the last 2 years in 6 month intervals
+    for i in range(6, 25, 6):
+        end_date = current_date - relativedelta(months=i - 6)
+        start_date = current_date - relativedelta(months=i)
+
+        parking_data_filtered = []
+        for parking in parking_data:
+            start_time = datetime.strptime(parking["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+            end_time = datetime.strptime(parking["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+
+            if start_time <= end_date and end_time >= start_date:
+                parking_data_filtered.append(parking)
+
+        total_parking_time = 0
+        if parking_data_filtered:
+            for parking in parking_data_filtered:
+                start_time = datetime.strptime(parking["start_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                end_time = datetime.strptime(parking["end_time"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                total_parking_time += (end_time - start_time).seconds / 60
+
+            total_parking_time = round(total_parking_time / len(parking_data_filtered))
+
+        timeframe_str = f"{start_date.strftime('%d-%m-%y')} \n {end_date.strftime('%d-%m-%y')}"
+        average_parking_times[timeframe_str] = total_parking_time
+
+    return average_parking_times
+
+
 data = {
   "municipality": "Rotterdam",
   "details": {
