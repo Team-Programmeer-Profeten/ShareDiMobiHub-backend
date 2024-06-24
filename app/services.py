@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-from time import strftime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
@@ -276,7 +275,7 @@ def distance_covered_halfyears(selected_data):
 
         previous_date = start_date
 
-    return distance_data
+    return dict(reversed(list(distance_data.items())))
 
 def average_distance_by_provider(selected_data):
     municipality = find_municipality_gmcode(selected_data["municipality"])
@@ -336,8 +335,7 @@ def average_parking_time_half_years(selected_data):
         timeframe_str = f"{start_date.strftime('%d-%m-%y')} \n {end_date.strftime('%d-%m-%y')}"
         average_parking_times[timeframe_str] = total_parking_time
 
-    return average_parking_times
-
+    return dict(reversed(list(average_parking_times.items())))
 
 data = {
   "municipality": "Rotterdam",
