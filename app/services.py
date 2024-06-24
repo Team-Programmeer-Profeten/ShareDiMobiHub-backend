@@ -337,6 +337,21 @@ def average_parking_time_half_years(selected_data):
 
     return dict(reversed(list(average_parking_times.items())))
 
+def rentals_per_provider_per_day():
+    rental_data = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
+    data = {}
+
+    for item in rental_data:
+        rentals = {}
+        time = datetime.strptime(item["start_interval"], "%Y-%m-%d %H:%M:%S%z").strftime("%d-%m-%Y")
+        for key, value in item.items():
+            if key != "start_interval":
+                rentals[key] = value
+
+        data[time] = rentals
+
+    return data
+
 data = {
   "municipality": "Rotterdam",
   "details": {
