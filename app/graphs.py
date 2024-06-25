@@ -69,7 +69,6 @@ def multi_linechart(data, width, height, name):
     p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
 
     source = ColumnDataSource(data=dict(data))
-    print(data)
     p.vline_stack(list(data.keys() - ["x"]), x='x', source=source)
 
     p.output_backend = "svg"
