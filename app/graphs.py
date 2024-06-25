@@ -62,13 +62,14 @@ def linechart(x, y, width, height, name):
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
+# todo: use multiple lines rather than vline_stack in order to be able to create a legend
 def multi_linechart(data, width, height, name):
     # Convert 'x' values from string to datetime
     data['x'] = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in data['x']]
     
     p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
 
-    source = ColumnDataSource(data=dict(data))
+    source = ColumnDataSource(data=data)
     p.vline_stack(list(data.keys() - ["x"]), x='x', source=source)
 
     p.output_backend = "svg"
