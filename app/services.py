@@ -231,10 +231,17 @@ def available_vehicles_municipality_total(GM_code, aggregation, start_time, end_
 
 def available_vehicles_municipality_providers(GM_code, aggregation, start_time, end_time):
   data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
-  output = map(lambda x: {"x": x.pop("start_interval"), "y": x}, data)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": x}, data))
+  providers = total[1]["y"].keys()
+
+  output = defaultdict(list)
+  for val in total:
+    output["x"].append(val["x"])
+    for provider in providers:
+      output[provider].append(val["y"][provider])
   return output
 
-print(available_vehicles_municipality_total(True, True, True, True))
+print(available_vehicles_municipality_providers(True, True, True, True))
 
 data = {
   "municipality": "Rotterdam",
