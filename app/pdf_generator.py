@@ -299,6 +299,17 @@ def add_page(data, writer):
                 c.setFont("Poppins", 28)
                 c.setFillColorRGB(0.8627, 0.9333, 0.9843)
                 c.drawString(250, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 660, "Gemiddelde bezetting alle hubs per voertuigtype")
+
+                # Avg occupation hubs
+                avg_occupation_hubs = data["avg_occupation_hubs"]
+                barchart_vertical(list(avg_occupation_hubs.keys()), list(avg_occupation_hubs.values()), 450, 250, "avg_occupation_hubs", "Voertuigtypes", "Gemiddelde bezetting")
+                avg_occupation_hubs_svg = svglib.svg2rlg(graph_path + "avg_occupation_hubs" + ".svg")
+                renderPDF.draw(avg_occupation_hubs_svg, c, 20, 400)
+
                 c.showPage()
                 c.save()
     

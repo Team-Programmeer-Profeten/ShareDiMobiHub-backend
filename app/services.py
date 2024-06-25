@@ -68,7 +68,7 @@ def select_details(json_data):
             chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
           case "hubs":
             chosen_details["topics"].append("Hubs")
-            chosen_details["hubs"] = hubs_by_municipality(json_data.get("municipality"))
+            chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
           case _:
             chosen_details = None
 
@@ -378,7 +378,7 @@ data = {
     "distance_travelled": True,
     "rentals": True,
     "zone_occupation": True,
-    "hubs": False
+    "hubs": True
   },
   "areas": [],
   "timeslot": {
@@ -387,4 +387,5 @@ data = {
   },
   "time_format": "daily"
 }
-print(avg_occupation_hubs(data))
+
+print(data_sort(data))
