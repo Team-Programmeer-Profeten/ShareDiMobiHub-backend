@@ -3,6 +3,7 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.io import export_svgs
 from bokeh.transform import cumsum
+from datetime import datetime
 
 from math import pi
 
@@ -62,14 +63,17 @@ def linechart(x, y, width, height, name):
   export_svgs(p, filename = graph_path + name + '.svg')
 
 def multi_linechart(data, width, height, name):
-  p = figure(width=width, height=height, background_fill_color=None, border_fill_color=None)
+    # Convert 'x' values from string to datetime
+    data['x'] = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in data['x']]
+    
+    p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
 
-  source = ColumnDataSource(data=dict(data))
-  print(data)
-  p.vline_stack(list(data.keys() - ["x"]), x='x', source=source)
+    source = ColumnDataSource(data=dict(data))
+    print(data)
+    p.vline_stack(list(data.keys() - ["x"]), x='x', source=source)
 
-  p.output_backend = "svg"
-  export_svgs(p, filename = graph_path + name + '.svg')
+    p.output_backend = "svg"
+    export_svgs(p, filename=graph_path + name + '.svg')
 
 def piechart(data_dict, width, height, name):
     categories = list(data_dict.keys())
