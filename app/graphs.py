@@ -1,8 +1,9 @@
 import os
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, LabelSet
+from bokeh.models import ColumnDataSource, LabelSet, FactorRange
 from bokeh.io import export_svgs
-from bokeh.transform import cumsum
+from bokeh.transform import cumsum, factor_cmap
+from bokeh.palettes import Viridis6 as palette
 
 from math import pi
 
@@ -46,6 +47,33 @@ def barchart_horizontal(categories, data, width, height, name, y_axis_label):
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
+def multi_barchart(data, width, height, name, x_axis_label, y_axis_label):
+    dates = list(data.keys())
+    companies = list(data[next(iter(data))].keys())
+    palette_cycle = multi_bar_colors(len(companies))
+
+    # Transform data for grouped bars
+    x = [(date, company) for date in dates for company in companies]
+    counts = [data[date][company] for date, company in x]
+
+    source = ColumnDataSource(data=dict(x=x, counts=counts))
+
+    p = figure(x_range=FactorRange(*x), width=width, height=height, toolbar_location=None, tools="", background_fill_color=None, border_fill_color=None)
+
+    p.vbar(x='x', top='counts', width=0.9, source=source,
+          line_color="white", fill_color=factor_cmap('x', palette=palette_cycle, factors=companies, start=1, end=2))
+
+    p.y_range.start = 0
+    p.x_range.range_padding = 0.1
+    p.xaxis.major_label_orientation = 1
+    p.xgrid.grid_line_color = None
+
+    p.xaxis.axis_label = x_axis_label
+    p.yaxis.axis_label = y_axis_label
+
+    p.output_backend = "svg"
+    export_svgs(p, filename=graph_path + name + '.svg')
+
 
 def piechart(data_dict, width, height, name):
     categories = list(data_dict.keys())
@@ -81,6 +109,13 @@ def colors(length):
 
 def pie_colors(length):
   colors = ["#f8a931", "#c0cccd", "#43bac3", "#31313d", "#3A8DDE", "#DE443A", "#65DE3A", "#BFC217"]
+  palette = colors
+  while len(palette) < length:
+    palette += colors
+  return palette[0:length]
+
+def multi_bar_colors(length):
+  colors = ["#43bac3", "#f8a931", "#31313d", "#2B5F3C", "#3A8DDE", "#DE443A"]
   palette = colors
   while len(palette) < length:
     palette += colors

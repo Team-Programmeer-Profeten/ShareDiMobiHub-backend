@@ -6,7 +6,7 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-from graphs import barchart_horizontal, barchart_vertical, piechart
+from graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -216,6 +216,23 @@ def add_page(data, writer):
                 barchart_vertical(list(rented_neighbourhoods_data.keys()), list(rented_neighbourhoods_data.values()), 300, 250, "rentals_neighbourhoods", "Dag", "Aantal")
                 rentals_svg = svglib.svg2rlg(graph_path + "rentals_neighbourhoods" + ".svg")
                 renderPDF.draw(rentals_svg, c, 20, 395)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 350, "Verhuringen per service provider per dag")
+
+                # Rentals per day per provider
+                rentals_per_provider = data["rentals_per_provider"]
+                multi_barchart(rentals_per_provider, 550, 400, "rentals_per_provider", "Dag", "Aantal")
+                rentals_per_provider_svg = svglib.svg2rlg(graph_path + "rentals_per_provider" + ".svg")
+
+                # Scale down the SVG
+                scale_factor = 0.70
+                rentals_per_provider_svg.width = rentals_per_provider_svg.width * scale_factor
+                rentals_per_provider_svg.height = rentals_per_provider_svg.height * scale_factor
+                rentals_per_provider_svg.scale(scale_factor, scale_factor)
+
+                renderPDF.draw(rentals_per_provider_svg, c, 20, 60)
 
                 c.showPage()
                 c.save()
