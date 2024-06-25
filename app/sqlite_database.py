@@ -1,6 +1,6 @@
 import sqlite3
 from .utils import Pprint
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token
 
 
 class Sqlite_database(Pprint):
@@ -47,12 +47,22 @@ class Sqlite_database(Pprint):
         self.conn.commit()
     
     def login(self, username, password):
-        self.cursor.execute('''
-            SELECT MUNICIPALITY FROM users WHERE username = ? AND password = ?
-        ''', (username, password))
+        if (password == 'google'):
+            self.cursor.execute('''
+                SELECT MUNICIPALITY FROM users WHERE username = ?
+            ''', (username,))
+        else:
+            self.cursor.execute('''
+                SELECT MUNICIPALITY FROM users WHERE username = ? AND password = ?
+            ''', (username, password))
         user_municipality = self.cursor.fetchone()
         access_token = create_access_token(identity=username)
         if user_municipality:
             return user_municipality, access_token
         return None, None
     
+    def get_municipality(self, username):
+        self.cursor.execute('''
+            SELECT MUNICIPALITY FROM users WHERE username = ?
+        ''', (username,))
+        return self.cursor.fetchone()

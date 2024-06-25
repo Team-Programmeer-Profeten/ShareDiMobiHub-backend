@@ -264,4 +264,9 @@ def login(username, password):
   user_municipality, token = db.login(username, password)
   if (user_municipality == None):
     return jsonify(message="Login failed"), 401
-  return jsonify(message="Login successfull", token=token), 200
+  return jsonify(message="Login successfull", token=token, municipality=user_municipality[0]), 200
+
+def get_municipality(username):
+  db = Sqlite_database()
+  municipality = db.get_municipality(username)
+  return municipality[0]
