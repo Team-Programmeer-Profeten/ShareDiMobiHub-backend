@@ -61,6 +61,14 @@ def linechart(x, y, width, height, name):
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
 
+def multi_linechart(data, width, height, name):
+  p = figure(width=width, height=height, background_fill_color=None, border_fill_color=None)
+  source = ColumnDataSource(data=data)
+  p.vline_stack(data.keys() - ["x"], x='x', source=source)
+
+  p.output_backend = "svg"
+  export_svgs(p, filename = graph_path + name + '.svg')
+
 def piechart(data_dict, width, height, name):
     categories = list(data_dict.keys())
     data = list(data_dict.values())
