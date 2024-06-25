@@ -242,8 +242,6 @@ def available_vehicles_municipality_providers(GM_code, aggregation, start_time, 
       output[provider].append(val["y"][provider])
   return output
 
-print(multi_linechart(available_vehicles_municipality_providers(True, True, True, True), 300, 300, "test"))
-
 data = {
   "municipality": "Rotterdam",
   "details": {
