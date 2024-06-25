@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 import datetime as dt
 from collections import defaultdict
+from graphs import multi_linechart
 from pdf_generator import create_pdf
 
 from api_calls import *
@@ -241,7 +242,7 @@ def available_vehicles_municipality_providers(GM_code, aggregation, start_time, 
       output[provider].append(val["y"][provider])
   return output
 
-print(available_vehicles_municipality_providers(True, True, True, True))
+print(multi_linechart(available_vehicles_municipality_providers(True, True, True, True), 300, 300, "test"))
 
 data = {
   "municipality": "Rotterdam",
