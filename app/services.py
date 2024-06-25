@@ -213,6 +213,24 @@ def top_5_hubs_rented(json_data):
   top5 = dict(sorted(top5.items(), key=lambda item: item[1], reverse=True)[:5])
   return {"top5": top5}
 
+def avg_occupation_hubs(json_data):
+  # average vehicles available in a hub
+  hub_data = hubs_by_municipality(json_data.get("municipality"))
+  countPerVehicleType = defaultdict(int) # aantal keren dat het voertuigtype voorkomt
+  totalPerVehicleType = defaultdict(int) # totaal aantal voertuigen per voertuigtype
+
+  for hub in hub_data:
+    if(hub["stop"] is None):
+      continue
+    for key, value in hub["stop"]["realtime_data"]["num_vehicles_available"].items():
+      totalPerVehicleType[key] += value
+      countPerVehicleType[key] += 1
+  
+  averagePerVehicleType = defaultdict(int)
+  for vehicleType in totalPerVehicleType:
+      averagePerVehicleType[vehicleType] = round(totalPerVehicleType[vehicleType] / countPerVehicleType[vehicleType], 2)
+  return dict(averagePerVehicleType)
+
 def total_vehicles_rented_per_time_period():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
   sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
@@ -313,20 +331,4 @@ data = {
   },
   "time_format": "daily"
 }
-
-print(data_sort({
-  "municipality": "Rotterdam",
-  "details": {
-    "amount_vehicles": True,
-    "distance_travelled": True,
-    "rentals": True,
-    "zone_occupation": True,
-    "hubs": True
-  },
-    "areas": [],
-    "timeslot": {
-        "start_date": "2024-03-03",
-        "end_date": "2024-04-02"
-    },
-    "time_format": "daily"
-}))
+print(avg_occupation_hubs(data))
