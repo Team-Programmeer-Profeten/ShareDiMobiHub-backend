@@ -1,6 +1,7 @@
 app/__pycache__/
 .venv/
 .vscode/
+app/utils/__pycache__/
 
 app/utils/graphs/*
 app/utils/topics/*

@@ -1,7 +1,9 @@
 import sqlite3
-from .utils import Pprint
+from utils import Pprint
 from flask_jwt_extended import create_access_token
 
+import json
+import os
 
 class Sqlite_database(Pprint):
 
@@ -12,25 +14,20 @@ class Sqlite_database(Pprint):
         
     def initialize_database(self):
         self.create_database()
-        self.hardcoded_users = [
-            {
-                'username': 'anmar.noah@gmail.com',
-                'password': '12345',
-                'munipicality': 'Rotterdam'
-            },
-            {   
-                'username': 't.derijk@gmail.com',
-                'password': '12345',
-                'munipicality': 'Utrecht'
-            }
-        ]
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        with open(os.path.join(dir_path, 'utils', 'users.json')) as users_json:
+
+            self.hardcoded_users = json.load(users_json).get('users')
+
+    
 
         for user in self.hardcoded_users:
             try:
                 self.inject_hardcoded_user(user['username'], user['password'], user['munipicality'])
             except sqlite3.IntegrityError:
                 self.printt(f'User {user["username"]} already exists in database, skipping....')
-
+        users_json.close()
     def create_database(self):
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
