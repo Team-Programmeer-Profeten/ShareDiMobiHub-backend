@@ -3,9 +3,13 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
-from pdf_generator import create_pdf
+from .pdf_generator import create_pdf
+from flask import jsonify
+from .api_calls import *
+from .sqlite_database import Sqlite_database
 
-from api_calls import *
+database = Sqlite_database()
+database.initialize_database()
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -389,6 +393,19 @@ def rentals_per_provider_per_day():
         data[time] = rentals
 
     return data
+
+def login(username, password):
+  db = Sqlite_database()
+  user_municipality, token = db.login(username, password)
+  if (user_municipality == None):
+    return jsonify(message="Login failed"), 401
+  return jsonify(message="Login successfull", token=token, municipality=user_municipality[0]), 200
+
+def get_municipality(username):
+  db = Sqlite_database()
+  municipality = db.get_municipality(username)
+  return municipality[0]
+
 
 data = {
   "municipality": "Rotterdam",
