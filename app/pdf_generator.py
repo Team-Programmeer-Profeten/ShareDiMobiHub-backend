@@ -6,7 +6,7 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-from graphs import barchart_horizontal, barchart_vertical, piechart
+from graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -84,7 +84,7 @@ def create_overlay(data):
 
     # top 5 hubs
     hubs_data = data["top_5_hubs"]["top5"]
-    barchart_horizontal(list(hubs_data.keys()), list(hubs_data.values()), 450, 200, "top_5_hubs")
+    barchart_horizontal(list(hubs_data.keys()), list(hubs_data.values()), 450, 200, "top_5_hubs", "Aantal verhuringen")
     hubs_svg = svglib.svg2rlg(graph_path + "top_5_hubs" + ".svg")
 
     # Scale down the SVG
@@ -97,7 +97,7 @@ def create_overlay(data):
 
     # top 5 zones rented
     zones_data = data["top_5_zones_rented"]["top5"]
-    barchart_horizontal(list(zones_data.keys()), list(zones_data.values()), 450, 200, "top_5_zones")
+    barchart_horizontal(list(zones_data.keys()), list(zones_data.values()), 450, 200, "top_5_zones", "Aantal verhuringen")
     zones_svg = svglib.svg2rlg(graph_path + "top_5_zones" + ".svg")
 
     # Scale down the SVG
@@ -132,6 +132,211 @@ def create_overlay(data):
     
     return overlay_path
 
+def add_page(data, writer):
+    if 'topics' in data:
+        for topic in data['topics']:
+            if topic == 'Hoeveelheid Voertuigen':
+                amount_vehicles = os.path.join(dir_path, 'utils', 'topics', 'amount_vehicles_overlay.pdf')
+                c = canvas.Canvas(amount_vehicles, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(130, 783, f"{topic}")
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(amount_vehicles)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Afstand Afgelegd':
+                distance_travelled = os.path.join(dir_path, 'utils', 'topics', 'distance_travelled_overlay.pdf')
+                c = canvas.Canvas(distance_travelled, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(170, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 660, "Afstand afgelegd per half jaar")
+
+                # Distance travelled per half year
+                distance_travelled_halfyears = data["distance_travelled_halfyears"]
+                barchart_vertical(list(distance_travelled_halfyears.keys()), list(distance_travelled_halfyears.values()), 350, 250, "distance_travelled_halfyears", "Tijdslot", "Afstand (km)")
+                distance_travelled_svg = svglib.svg2rlg(graph_path + "distance_travelled_halfyears" + ".svg")
+                renderPDF.draw(distance_travelled_svg, c, 20, 395)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 330, "Gemiddelde afstand per service provider")
+                
+                # Average distance by provider
+                average_distance_by_provider = data["average_distance_by_provider"]
+                barchart_horizontal(list(average_distance_by_provider.keys()), list(average_distance_by_provider.values()), 450, 200, "average_distance_by_provider", "Afstand (m)")
+                average_distance_by_provider_svg = svglib.svg2rlg(graph_path + "average_distance_by_provider" + ".svg")
+                renderPDF.draw(average_distance_by_provider_svg, c, 18, 120)
+
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(distance_travelled)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Verhuringen':
+                rentals = os.path.join(dir_path, 'utils', 'topics', 'rentals_overlay.pdf')
+                c = canvas.Canvas(rentals, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(200, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(100, 660, "Verhuringen per dag")
+
+                # Rentals per day
+                rented_neighbourhoods_data = data["rentals_neighbourhoods"]
+                barchart_vertical(list(rented_neighbourhoods_data.keys()), list(rented_neighbourhoods_data.values()), 300, 250, "rentals_neighbourhoods", "Dag", "Aantal")
+                rentals_svg = svglib.svg2rlg(graph_path + "rentals_neighbourhoods" + ".svg")
+                renderPDF.draw(rentals_svg, c, 20, 395)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 350, "Verhuringen per service provider per dag")
+
+                # Rentals per day per provider
+                rentals_per_provider = data["rentals_per_provider"]
+                multi_barchart(rentals_per_provider, 550, 400, "rentals_per_provider", "Dag", "Aantal")
+                rentals_per_provider_svg = svglib.svg2rlg(graph_path + "rentals_per_provider" + ".svg")
+
+                # Scale down the SVG
+                scale_factor = 0.70
+                rentals_per_provider_svg.width = rentals_per_provider_svg.width * scale_factor
+                rentals_per_provider_svg.height = rentals_per_provider_svg.height * scale_factor
+                rentals_per_provider_svg.scale(scale_factor, scale_factor)
+
+                renderPDF.draw(rentals_per_provider_svg, c, 20, 60)
+
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(rentals)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Zone Bezetting':
+                zone_occupation = os.path.join(dir_path, 'utils', 'topics', 'zone_occupation_overlay.pdf')
+                c = canvas.Canvas(zone_occupation, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(190, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(80, 660, "Gemiddelde parkeertijd per service provider")
+
+                # Average parking time by provider
+                avg_parkingtime_per_provider = data["avg_parkingtime_per_provider"]
+                barchart_horizontal(list(avg_parkingtime_per_provider.keys()), list(avg_parkingtime_per_provider.values()), 450, 200, "avg_parkingtime_per_provider", "Parkeertijd (h)")
+                avg_parkingtime_per_provider_svg = svglib.svg2rlg(graph_path + "avg_parkingtime_per_provider" + ".svg")
+                renderPDF.draw(avg_parkingtime_per_provider_svg, c, 20, 450)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 365, "Gemiddelde parkeertijd in minuten per half jaar")
+
+                # Average parking time half years
+                avg_parkingtime_halfyears = data["avg_parking_time_half_years"]
+                barchart_vertical(list(avg_parkingtime_halfyears.keys()), list(avg_parkingtime_halfyears.values()), 350, 250, "avg_parking_time_half_years", "Tijdslot", "Tijd (min)")
+                avg_parkingtime_halfyears_svg = svglib.svg2rlg(graph_path + "avg_parking_time_half_years" + ".svg")
+                renderPDF.draw(avg_parkingtime_halfyears_svg, c, 30, 100)
+
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(zone_occupation)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+
+            if topic == 'Hubs':
+                hubs = os.path.join(dir_path, 'utils', 'topics', 'hubs_overlay.pdf')
+                c = canvas.Canvas(hubs, pagesize=A4)
+                c.setFont("Poppins", 28)
+                c.setFillColorRGB(0.8627, 0.9333, 0.9843)
+                c.drawString(250, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 660, "Gemiddelde bezetting alle hubs per voertuigtype")
+
+                # Avg occupation hubs
+                avg_occupation_hubs = data["avg_occupation_hubs"]
+                barchart_vertical(list(avg_occupation_hubs.keys()), list(avg_occupation_hubs.values()), 450, 250, "avg_occupation_hubs", "Voertuigtypes", "Gemiddelde bezetting")
+                avg_occupation_hubs_svg = svglib.svg2rlg(graph_path + "avg_occupation_hubs" + ".svg")
+                renderPDF.draw(avg_occupation_hubs_svg, c, 20, 400)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 330, "Bezetting totale capaciteit hubs per voertuigtype")
+
+                # Available vehicle percentage of capacity of all hubs
+                available_vehicle_percentage = data["vehicle_available_percentage_of_capacity"]
+                barchart_vertical(list(available_vehicle_percentage.keys()), list(available_vehicle_percentage.values()), 450, 250, "vehicle_available_percentage_of_capacity", "Voertuigtypes", "Bezetting (%)")
+                available_vehicle_percentage_svg = svglib.svg2rlg(graph_path + "vehicle_available_percentage_of_capacity" + ".svg")
+                renderPDF.draw(available_vehicle_percentage_svg, c, 20, 75)
+
+                c.showPage()
+                c.save()
+    
+                overlay = PdfReader(hubs)
+                template = PdfReader(os.path.join(dir_path, 'utils', 'Topic_Template.pdf'))
+                
+                newWriter = PdfWriter()
+                template_page = template.pages[0]
+                overlay_page = overlay.pages[0]
+
+                template_page.merge_page(overlay_page)
+
+                newWriter.add_page(template_page)
+
+                writer.add_page(template_page)
+    
+
 def create_pdf(data):
     # Maak een PDF met nieuwe inhoud
     overlay_pdf_path = create_overlay(data)
@@ -153,6 +358,8 @@ def create_pdf(data):
 
     # Voeg de samengestelde pagina toe aan de PdfWriter
     writer.add_page(first_page)
+
+    add_page(data, writer)
 
     # Schrijf de nieuwe samengestelde PDF
     new_pdf_path = os.path.join(dir_path, 'utils', 'filled_infographic.pdf')
