@@ -310,6 +310,16 @@ def add_page(data, writer):
                 avg_occupation_hubs_svg = svglib.svg2rlg(graph_path + "avg_occupation_hubs" + ".svg")
                 renderPDF.draw(avg_occupation_hubs_svg, c, 20, 400)
 
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(50, 330, "Bezetting totale capaciteit hubs per voertuigtype")
+
+                # Available vehicle percentage of capacity of all hubs
+                available_vehicle_percentage = data["vehicle_available_percentage_of_capacity"]
+                barchart_vertical(list(available_vehicle_percentage.keys()), list(available_vehicle_percentage.values()), 450, 250, "vehicle_available_percentage_of_capacity", "Voertuigtypes", "Bezetting (%)")
+                available_vehicle_percentage_svg = svglib.svg2rlg(graph_path + "vehicle_available_percentage_of_capacity" + ".svg")
+                renderPDF.draw(available_vehicle_percentage_svg, c, 20, 75)
+
                 c.showPage()
                 c.save()
     

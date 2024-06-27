@@ -69,6 +69,7 @@ def select_details(json_data):
           case "hubs":
             chosen_details["topics"].append("Hubs")
             chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
+            chosen_details["vehicle_available_percentage_of_capacity"] = vehicle_available_percentage_of_capacity(json_data)
           case _:
             chosen_details = None
 
@@ -231,6 +232,24 @@ def avg_occupation_hubs(json_data):
   for vehicleType in totalPerVehicleType:
       averagePerVehicleType[vehicleType] = round(totalPerVehicleType[vehicleType] / countPerVehicleType[vehicleType], 2)
   return dict(averagePerVehicleType)
+
+def vehicle_available_percentage_of_capacity(json_data):
+    hub_data = hubs_by_municipality(json_data.get("municipality"))
+    totalCapacity = 0
+    totalPerVehicleType = defaultdict(int)
+
+    for hub in hub_data:
+        if(hub["stop"] is None):
+            continue
+        for key, value in hub["stop"]["capacity"].items():
+            totalCapacity += value
+        for key, value in hub["stop"]["realtime_data"]["num_vehicles_available"].items():
+            totalPerVehicleType[key] += value
+
+    percentagePerVehicleType = defaultdict(int)
+    for vehicleType in totalPerVehicleType:
+        percentagePerVehicleType[vehicleType] = round(totalPerVehicleType[vehicleType] / totalCapacity * 100, 2)
+    return dict(percentagePerVehicleType)
 
 def total_vehicles_rented_per_time_period():
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
