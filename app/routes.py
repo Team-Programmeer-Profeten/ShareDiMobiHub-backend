@@ -13,11 +13,16 @@ app.config['JWT_SECRET_KEY'] = JWT_SECRET
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
 CORS(app)
+cors = CORS(app, resource={
+    r"/*":{
+        "origins":"145.38.194.144"
+    }
+})
 jwt = JWTManager(app)
 
 
 @jwt_required()
-@app.route('/report', methods = ["POST"])
+@app.route('/api/report', methods = ["POST"])
 def controller():
     verify_jwt_in_request()
     current_user = get_jwt_identity()
@@ -32,7 +37,7 @@ def controller():
     except Exception as e:
         return jsonify(message=str(e)), 500
 
-@app.route('/login', methods = ["POST"])
+@app.route('/api/login', methods = ["POST"])
 def login_route():
     data = request.get_json()
     username = data.get("username")
@@ -40,7 +45,7 @@ def login_route():
     return login(username, password)
 
 @jwt_required()
-@app.route('/test')
+@app.route('/api/test')
 def test():
     verify_jwt_in_request()
     current_user = get_jwt_identity()

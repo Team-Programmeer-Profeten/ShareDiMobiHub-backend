@@ -6,7 +6,7 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-from graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart
+from app.graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart
 
 from PyPDF2 import PdfReader, PdfWriter
 
