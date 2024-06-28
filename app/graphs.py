@@ -3,6 +3,7 @@ from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.io import export_svgs
 from bokeh.transform import cumsum
+from bokeh.palettes import Category20
 from datetime import datetime
 
 from math import pi
@@ -64,13 +65,20 @@ def linechart(x, y, width, height, name):
 
 # todo: use multiple lines rather than vline_stack in order to be able to create a legend
 def multi_linechart(data, width, height, name):
-    # Convert 'x' values from string to datetime
-    data['x'] = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in data['x']]
+    x = data.pop("x")
+
+    x = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in x]
+
+
+    # you can use another bokeh pallete here as long as it has enough colors
+    colors = list(Category20[len(data)])
     
     p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
 
-    source = ColumnDataSource(data=data)
-    p.vline_stack(list(data.keys() - ["x"]), x='x', source=source)
+    for key, value in data.items():
+      p.line(x, value, line_width = 2, legend_label=key, color=colors.pop())
+
+    p.add_layout(p.legend[0], 'right')
 
     p.output_backend = "svg"
     export_svgs(p, filename=graph_path + name + '.svg')
