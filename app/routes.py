@@ -4,7 +4,6 @@ from app.services import data_sort
 from app.services import login, get_municipality
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, verify_jwt_in_request
 from datetime import timedelta
-import time
 
 
 app = Flask(__name__)
@@ -19,6 +18,15 @@ jwt = JWTManager(app)
 @jwt_required()
 @app.route('/report', methods = ["POST"])
 def controller():
+    """
+    This function is the controller for the report generation
+    It verifies the jwt token and then generates the report
+
+    @return report: pdf file
+
+    @raises exception: If the report generation fails
+    """
+
     verify_jwt_in_request()
     current_user = get_jwt_identity()
     request_municipality = request.get_json().get("municipality")
@@ -34,14 +42,16 @@ def controller():
 
 @app.route('/login', methods = ["POST"])
 def login_route():
+    """
+    This function is the controller for the login
+    It verifies the user credentials and returns the jwt token
+
+    @return jwt_token: jwt token
+
+    @raises exception: If the login fails
+    """
+    
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
     return login(username, password)
-
-@jwt_required()
-@app.route('/test')
-def test():
-    verify_jwt_in_request()
-    current_user = get_jwt_identity()
-    return jsonify(logged_in_as=current_user), 200

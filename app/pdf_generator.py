@@ -6,9 +6,7 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
-
 from graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart, linechart, multi_linechart
-
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -25,6 +23,14 @@ pdfmetrics.registerFont(TTFont('Poppins-ExtraBold', os.path.join(dir_path, 'util
 
 
 def create_overlay(data):
+    """
+    @param data: dict
+
+    This function creates an overlay for the Infographic with the data given from the services.py file
+    The overlay is saved as a PDF file
+
+    @return overlay_path: str
+    """
     # Destination path for the overlay PDF
     overlay_path = os.path.join(dir_path, 'utils', 'overlay.pdf')
     
@@ -135,6 +141,14 @@ def create_overlay(data):
     return overlay_path
 
 def add_page(data, writer):
+    """
+    @param data: dict
+    @param writer: PdfWriter
+
+    This function adds extra pages to the report PDF with the data from the topics
+    For every topic in the data it will create a new page with graphs and data from the topic
+    """
+
     if 'topics' in data:
         for topic in data['topics']:
             if topic == 'Hoeveelheid Voertuigen':
@@ -361,30 +375,36 @@ def add_page(data, writer):
     
 
 def create_pdf(data):
-    # Maak een PDF met nieuwe inhoud
+    """
+    @param data: dict
+
+    This function creates the report PDF with the data given from the services.py file
+    It first makes an overlay PDF with the data and then merges it with the template PDF
+    If needed it will add extra pages with the data from the topics
+
+    @return new_pdf_path: str
+    """
+
     overlay_pdf_path = create_overlay(data)
 
-    # Lees de bestaande template en de overlay
     template_path = os.path.join(dir_path, 'utils', 'Infographic_Template.pdf')
     template = PdfReader(template_path)
     overlay = PdfReader(overlay_pdf_path)
 
-    # Maak een nieuwe PdfWriter om de samengestelde PDF te maken
     writer = PdfWriter()
 
-    # Voeg inhoud van de overlay toe aan de eerste pagina van de template
     first_page = template.pages[0]
     overlay_page = overlay.pages[0]
 
-    # Voeg de overlay-inhoud toe aan de eerste pagina van de template
+    # merges the overlay with the template
     first_page.merge_page(overlay_page)
 
-    # Voeg de samengestelde pagina toe aan de PdfWriter
     writer.add_page(first_page)
 
+    # Add extra pages with the data from the topics
     add_page(data, writer)
 
-    # Schrijf de nieuwe samengestelde PDF
+    # Save the new PDF
     new_pdf_path = os.path.join(dir_path, 'utils', 'filled_infographic.pdf')
     writer.write(new_pdf_path)
     

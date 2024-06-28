@@ -6,6 +6,21 @@ import json
 import os
 
 class Sqlite_database(Pprint):
+    """
+    This class is responsible for the database connection and user authentication
+
+    Attributes:
+    conn: sqlite3 connection object
+    cursor: sqlite3 cursor object
+    hardcoded_users: list of hardcoded users
+
+    Methods:
+    initialize_database: creates the database and injects the hardcoded users
+    create_database: creates the users table in the database
+    inject_hardcoded_user: injects a hardcoded user into the database
+    login: authenticates the user
+    get_municipality: gets the municipality of the user
+    """
 
     def __init__(self):
         super().__init__(1, "ShareDiMoBiHub", "Database")
@@ -17,17 +32,15 @@ class Sqlite_database(Pprint):
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         with open(os.path.join(dir_path, 'utils', 'users.json')) as users_json:
-
             self.hardcoded_users = json.load(users_json).get('users')
-
-    
-
+            
         for user in self.hardcoded_users:
             try:
                 self.inject_hardcoded_user(user['username'], user['password'], user['munipicality'])
             except sqlite3.IntegrityError:
                 self.printt(f'User {user["username"]} already exists in database, skipping....')
         users_json.close()
+
     def create_database(self):
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (

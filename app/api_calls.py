@@ -1,6 +1,13 @@
 import requests
 import json
 
+"""
+This file contains the api calls that are used in the services.py file
+These are the functions that are called to get the data from the api
+All the data from the api is mocked, so the data is not real
+If data gets changed to real data, functions will have to be updated
+"""
+
 def find_municipality_gmcode(municipality):
     if(municipality == None):
         raise ValueError("No municipality given")

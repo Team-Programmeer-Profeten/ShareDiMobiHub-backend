@@ -7,6 +7,19 @@ init()
 
 class Pprint():
 
+    """
+    This class is responsible for the pretty printing of the logs
+
+    Attributes:
+    task: int
+    screenlock: Semaphore
+    specification: str
+    siteName: str
+
+    Methods:
+    printt: prints the message with the correct color
+    """
+
     def __init__(self, task_id, specification, siteName):
         self.task = task_id
         self.screenlock = Semaphore(1)

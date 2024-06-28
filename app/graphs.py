@@ -13,6 +13,18 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 graph_path = os.path.join(dir_path, 'utils', 'graphs', 'SVG_')
 
 def barchart_vertical(categories, data, width, height, name, x_axis_label, y_axis_label):
+  """
+  @param categories: list
+  @param data: list
+  @param width: int
+  @param height: int
+  @param name: str
+  @param x_axis_label: str
+  @param y_axis_label: str
+
+  This function creates a vertical bar chart with the given data and exports it as an svg file
+  """
+
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=categories, y=data, color=color))
   p = figure(x_range=categories, width=width, height=height, background_fill_color=None, border_fill_color=None)
@@ -33,6 +45,17 @@ def barchart_vertical(categories, data, width, height, name, x_axis_label, y_axi
   export_svgs(p, filename = graph_path + name + '.svg')
 
 def barchart_horizontal(categories, data, width, height, name, y_axis_label):
+  """
+  @param categories: list
+  @param data: list
+  @param width: int
+  @param height: int
+  @param name: str
+  @param y_axis_label: str
+
+  This function creates a horizontal bar chart with the given data and exports it as an svg file
+  """
+
   color = colors(len(categories))
   source = ColumnDataSource(data=dict(x=data, y=categories, color=color))
   p = figure(y_range=categories, width=width, height=height, background_fill_color=None, border_fill_color=None)
@@ -50,6 +73,18 @@ def barchart_horizontal(categories, data, width, height, name, y_axis_label):
   export_svgs(p, filename = graph_path + name + '.svg')
 
 def linechart(x, y, width, height, name, x_axis_label, y_axis_label):
+  """
+  @param x: list
+  @param y: list
+  @param width: int
+  @param height: int
+  @param name: str
+  @param x_axis_label: str
+  @param y_axis_label: str
+
+  This function creates a line chart with the given data and exports it as an svg file
+  """
+
   x = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in x]
 
   p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)
@@ -63,15 +98,23 @@ def linechart(x, y, width, height, name, x_axis_label, y_axis_label):
 
 
 def multi_linechart(data, width, height, name):
+    """
+    @param data: dict
+    @param width: int
+    @param height: int
+    @param name: str
+
+    This function creates a multi line chart with the given data and exports it as an svg file
+    """
+
     x = data.pop("x")
 
     x = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in x]
 
-
     # you can use another bokeh pallete here as long as it has enough colors
     colors = list(Category20[len(data)])
     
-    p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
+    p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)
 
     for key, value in data.items():
       p.line(x, value, line_width = 2, legend_label=key, color=colors.pop())
@@ -85,6 +128,17 @@ def multi_linechart(data, width, height, name):
     
 
 def multi_barchart(data, width, height, name, x_axis_label, y_axis_label):
+    """
+    @param data: dict
+    @param width: int
+    @param height: int
+    @param name: str
+    @param x_axis_label: str
+    @param y_axis_label: str
+
+    This function creates a multi bar chart with the given data and exports it as an svg file
+    """
+
     dates = list(data.keys())
     companies = list(data[next(iter(data))].keys())
     palette_cycle = multi_bar_colors(len(companies))
@@ -113,6 +167,15 @@ def multi_barchart(data, width, height, name, x_axis_label, y_axis_label):
 
 
 def piechart(data_dict, width, height, name):
+    """
+    @param data_dict: dict
+    @param width: int
+    @param height: int
+    @param name: str
+
+    This function creates a pie chart and legend with the given data and exports it as an svg file
+    """
+
     categories = list(data_dict.keys())
     data = list(data_dict.values())
     color = pie_colors(len(categories))
@@ -138,6 +201,14 @@ def piechart(data_dict, width, height, name):
     export_svgs(p, filename = graph_path + name + '.svg')
 
 def colors(length):
+  """
+  @param length: int
+
+  This function returns a list of colors for the barchart graphs
+
+  @return palette: list
+  """
+  
   colors = ["#f8a931", "#c0cccd", "#43bac3", "#31313d"]
   palette = colors
   while len(palette) < length:
@@ -145,6 +216,14 @@ def colors(length):
   return palette[0:length]
 
 def pie_colors(length):
+  """
+  @param length: int
+
+  This function returns a list of colors for the piechart graphs
+
+  @return palette: list
+  """
+
   colors = ["#f8a931", "#c0cccd", "#43bac3", "#31313d", "#3A8DDE", "#DE443A", "#65DE3A", "#BFC217"]
   palette = colors
   while len(palette) < length:
@@ -152,6 +231,14 @@ def pie_colors(length):
   return palette[0:length]
 
 def multi_bar_colors(length):
+  """
+  @param length: int
+
+  This function returns a list of colors for the multi barchart graphs
+
+  @return palette: list
+  """
+
   colors = ["#43bac3", "#f8a931", "#31313d", "#2B5F3C", "#3A8DDE", "#DE443A"]
   palette = colors
   while len(palette) < length:
