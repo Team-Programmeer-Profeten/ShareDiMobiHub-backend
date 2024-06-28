@@ -1,8 +1,10 @@
 Flask
 flask-cors
+flask-jwt-extended
 requests
 reportlab
 PyPDF2
 svglib
 bokeh
 selenium
+colorama

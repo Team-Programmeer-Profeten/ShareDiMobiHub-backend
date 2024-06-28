@@ -5,8 +5,12 @@ import datetime as dt
 from collections import defaultdict
 from graphs import multi_linechart
 from pdf_generator import create_pdf
-
+from flask import jsonify
 from api_calls import *
+from sqlite_database import Sqlite_database
+
+database = Sqlite_database()
+database.initialize_database()
 
 def data_sort(json_data):
   details = select_details(json_data)
@@ -615,6 +619,20 @@ def available_vehicles_municipality_providers(GM_code, aggregation, start_time, 
     for provider in providers:
       output[provider].append(val["y"][provider])
   return output
+
+
+def login(username, password):
+  db = Sqlite_database()
+  user_municipality, token = db.login(username, password)
+  if (user_municipality == None):
+    return jsonify(message="Login failed"), 401
+  return jsonify(message="Login successfull", token=token, municipality=user_municipality[0]), 200
+
+def get_municipality(username):
+  db = Sqlite_database()
+  municipality = db.get_municipality(username)
+  return municipality[0]
+
 
 data = {
   "municipality": "Rotterdam",
