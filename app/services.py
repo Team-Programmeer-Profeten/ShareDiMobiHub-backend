@@ -23,70 +23,70 @@ def select_details(json_data):
 
   @return chosen_details: dict
   """
-    chosen_details = {}
+  chosen_details = {}
 
-    municipality = json_data.get("municipality")
-    chosen_details["municipality"] = municipality
+  municipality = json_data.get("municipality")
+  chosen_details["municipality"] = municipality
 
-    gm_code = find_municipality_gmcode(municipality)
+  gm_code = find_municipality_gmcode(municipality)
 
-    start_date = json_data.get("timeslot")["start_date"]
-    end_date = json_data.get("timeslot")["end_date"]
+  start_date = json_data.get("timeslot")["start_date"]
+  end_date = json_data.get("timeslot")["end_date"]
 
-    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+  start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+  end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
-    start_date_str = start_date_obj.strftime("%d-%m")
-    end_date_str = end_date_obj.strftime("%d-%m")
-    chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
+  start_date_str = start_date_obj.strftime("%d-%m")
+  end_date_str = end_date_obj.strftime("%d-%m")
+  chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
 
-    chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
+  chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
 
-    chosen_details["topics"] = []
+  chosen_details["topics"] = []
 
-    chosen_details["amount_hubs"] = total_amount_hubs(json_data)
+  chosen_details["amount_hubs"] = total_amount_hubs(json_data)
 
-    chosen_details["service_providers"] = get_service_providers()
+  chosen_details["service_providers"] = get_service_providers()
 
-    json_details = json_data.get("details")
+  json_details = json_data.get("details")
 
-    chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_hours(json_data)
-    chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
+  chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_hours(json_data)
+  chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
 
-    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data)
-    chosen_details["top_5_hubs"] = top_5_hubs_rented(json_data)
+  chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data)
+  chosen_details["top_5_hubs"] = top_5_hubs_rented(json_data)
 
-    chosen_details["total_amount_vehicles"] = total_amount_vehicles()
-    chosen_details["total_vehicles_rented"] = total_vehicles_rented()
+  chosen_details["total_amount_vehicles"] = total_amount_vehicles()
+  chosen_details["total_vehicles_rented"] = total_vehicles_rented()
 
-    # optional details
-    for key, value in json_details.items():
-      if(value):
-        match key:
-          case "amount_vehicles":
-            chosen_details["topics"].append("Hoeveelheid Voertuigen")
-            chosen_details["amount_vehicles"] = available_vehicles_municipality_total(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
-            chosen_details["amount_vehicles_provider"] = available_vehicles_municipality_providers(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
-          case "distance_travelled":
-            chosen_details["topics"].append("Afstand Afgelegd")
-            chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
-            chosen_details["average_distance_by_provider"] = average_distance_by_provider(json_data)
-          case "rentals":
-            chosen_details["topics"].append("Verhuringen")
-            chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
-            chosen_details["rentals_per_provider"] = rentals_per_provider_per_day()
-          case "zone_occupation":
-            chosen_details["topics"].append("Zone Bezetting")
-            chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
-            chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
-          case "hubs":
-            chosen_details["topics"].append("Hubs")
-            chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
-            chosen_details["vehicle_available_percentage_of_capacity"] = vehicle_available_percentage_of_capacity(json_data)
-          case _:
-            chosen_details = None
+  # optional details
+  for key, value in json_details.items():
+    if(value):
+      match key:
+        case "amount_vehicles":
+          chosen_details["topics"].append("Hoeveelheid Voertuigen")
+          chosen_details["amount_vehicles"] = available_vehicles_municipality_total(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+          chosen_details["amount_vehicles_provider"] = available_vehicles_municipality_providers(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+        case "distance_travelled":
+          chosen_details["topics"].append("Afstand Afgelegd")
+          chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
+          chosen_details["average_distance_by_provider"] = average_distance_by_provider(json_data)
+        case "rentals":
+          chosen_details["topics"].append("Verhuringen")
+          chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
+          chosen_details["rentals_per_provider"] = rentals_per_provider_per_day()
+        case "zone_occupation":
+          chosen_details["topics"].append("Zone Bezetting")
+          chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
+          chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
+        case "hubs":
+          chosen_details["topics"].append("Hubs")
+          chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
+          chosen_details["vehicle_available_percentage_of_capacity"] = vehicle_available_percentage_of_capacity(json_data)
+        case _:
+          chosen_details = None
 
-    return chosen_details
+  return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
   """
