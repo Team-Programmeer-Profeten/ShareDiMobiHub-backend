@@ -6,7 +6,13 @@ from reportlab.graphics import renderPDF
 
 import svglib.svglib as svglib
 
+<<<<<<< HEAD
 from app.graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart
+=======
+
+from graphs import barchart_horizontal, barchart_vertical, piechart, multi_barchart, linechart, multi_linechart
+
+>>>>>>> 3dccf431827db96b27dc965c4550b3ee5683fbdb
 
 from PyPDF2 import PdfReader, PdfWriter
 
@@ -141,6 +147,27 @@ def add_page(data, writer):
                 c.setFont("Poppins", 28)
                 c.setFillColorRGB(0.8627, 0.9333, 0.9843)
                 c.drawString(130, 783, f"{topic}")
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(100, 660, "Aantal voertuigen per tijdslot")
+
+                # Amount vehicles
+                vehicle_data = data["amount_vehicles"]
+                linechart(vehicle_data["x"], vehicle_data["y"], 450, 250, "amount_vehicles", "Tijdslot", "Aantal voertuigen")
+                vehicle_svg = svglib.svg2rlg(graph_path + "amount_vehicles" + ".svg")
+                renderPDF.draw(vehicle_svg, c, 20, 395)
+
+                c.setFont("Poppins-SemiBold", 16)
+                c.setFillColorRGB(0.0392, 0.1019, 0.1608)
+                c.drawString(90, 330, "Aantal voertuigen per service provider")
+
+                # Amount vehicles per provider
+                vehicle_data_provider = data["amount_vehicles_provider"]
+                multi_linechart(vehicle_data_provider, 550, 250, "amount_vehicles_provider")
+                vehicle_provider_svg = svglib.svg2rlg(graph_path + "amount_vehicles_provider" + ".svg")
+                renderPDF.draw(vehicle_provider_svg, c, 20, 70)
+
                 c.showPage()
                 c.save()
     

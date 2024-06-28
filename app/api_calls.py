@@ -94,8 +94,17 @@ def vehicle_rented_in_zonelist_per_day(zone_ids):
 
 def hubs_by_municipality(GM_code):
     # remove no parking from actual request when in prod
-    # request = "https://mds.dashboarddeelmobiliteit.nl/admin/zones?municipality=GM0599&geography_types=no_parking&geography_types=stop&geography_types=monitoring"
+    # request = "https://mds.dashboarddeelmobiliteit.nl/admin/zones?municipality={GM_code}&geography_types=no_parking&geography_types=stop&geography_types=monitoring"
     mockRequest = "https://www.stoopstestdomein.nl/mock-api/10.json"
     response_str = requests.get(mockRequest)
     response = json.loads(response_str.content)
+    return response
+
+def vehicles_in_municipality(GM_code, aggregation, start_time, end_time):
+    # hubs = hubs_by_municipality(GM_code)
+    # ids = map(lambda x: x.get("zone_id"))
+    # request = f"https://api.dashboarddeelmobiliteit.nl/dashboard-api/aggregated_stats/available_vehicles?aggregation_level={aggregation}&aggregation_time=undefined&zone_ids={ids}&start_time={start_time}&end_time={end_time}"
+    mockRequest = "https://www.stoopstestdomein.nl/mock-api/8.json"
+    response_str = requests.get(mockRequest)
+    response = json.loads(response_str.content).get("available_vehicles_aggregated_stats").get("values")
     return response
