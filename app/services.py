@@ -3,6 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
+from graphs import multi_linechart
 from pdf_generator import create_pdf
 from flask import jsonify
 from api_calls import *
@@ -17,79 +18,116 @@ def data_sort(json_data):
   return report
 
 def select_details(json_data):
-    chosen_details = {}
+  """
+  @param json_data: json
 
-    municipality = json_data.get("municipality")
-    chosen_details["municipality"] = municipality
+  First calls the functions to create the infographic.
+  Then reads the selected topics from the json data and calls the related functions.
 
-    start_date = json_data.get("timeslot")["start_date"]
-    end_date = json_data.get("timeslot")["end_date"]
 
-    start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-    end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+  @return chosen_details: dict
+  """
+  chosen_details = {}
 
-    start_date_str = start_date_obj.strftime("%d-%m")
-    end_date_str = end_date_obj.strftime("%d-%m")
-    chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
+  municipality = json_data.get("municipality")
+  chosen_details["municipality"] = municipality
 
-    chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
+  gm_code = find_municipality_gmcode(municipality)
 
-    chosen_details["topics"] = []
+  start_date = json_data.get("timeslot")["start_date"]
+  end_date = json_data.get("timeslot")["end_date"]
 
-    chosen_details["amount_hubs"] = total_amount_hubs(json_data)
+  start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+  end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
 
-    chosen_details["service_providers"] = get_service_providers()
+  start_date_str = start_date_obj.strftime("%d-%m")
+  end_date_str = end_date_obj.strftime("%d-%m")
+  chosen_details["time_period"] = f"{start_date_str} | {end_date_str}"
 
-    json_details = json_data.get("details")
+  chosen_details["date"] = datetime.now().strftime("%d-%m-%Y")
 
-    chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_hours(json_data)
-    chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
+  chosen_details["topics"] = []
 
-    chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data)
-    chosen_details["top_5_hubs"] = top_5_hubs_rented(json_data)
+  chosen_details["amount_hubs"] = total_amount_hubs(json_data)
 
-    chosen_details["total_amount_vehicles"] = total_amount_vehicles()
-    chosen_details["total_vehicles_rented"] = total_vehicles_rented()
+  chosen_details["service_providers"] = get_service_providers()
 
-    # optional details
-    for key, value in json_details.items():
-      if(value):
-        match key:
-          case "amount_vehicles":
-            chosen_details["topics"].append("Hoeveelheid Voertuigen")
-            chosen_details["amount_vehicles"] = vehicles_in_zone_per_day()
-          case "distance_travelled":
-            chosen_details["topics"].append("Afstand Afgelegd")
-            chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
-            chosen_details["average_distance_by_provider"] = average_distance_by_provider(json_data)
-          case "rentals":
-            chosen_details["topics"].append("Verhuringen")
-            chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
-            chosen_details["rentals_per_provider"] = rentals_per_provider_per_day()
-          case "zone_occupation":
-            chosen_details["topics"].append("Zone Bezetting")
-            chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
-            chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
-          case "hubs":
-            chosen_details["topics"].append("Hubs")
-            chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
-            chosen_details["vehicle_available_percentage_of_capacity"] = vehicle_available_percentage_of_capacity(json_data)
-          case _:
-            chosen_details = None
+  json_details = json_data.get("details")
 
-    return chosen_details
+  chosen_details["avg_parking_time"] = average_parkingtime_per_vehicletype_in_hours(json_data)
+  chosen_details["avg_distance_travelled"] = average_distance_travelled_per_vehicletype_in_meters(json_data)
+
+  chosen_details["top_5_zones_rented"] = top_5_zones_rented(json_data)
+  chosen_details["top_5_hubs"] = top_5_hubs_rented(json_data)
+
+  chosen_details["total_amount_vehicles"] = total_amount_vehicles()
+  chosen_details["total_vehicles_rented"] = total_vehicles_rented()
+
+  # optional details
+  for key, value in json_details.items():
+    if(value):
+      match key:
+        case "amount_vehicles":
+          chosen_details["topics"].append("Hoeveelheid Voertuigen")
+          chosen_details["amount_vehicles"] = available_vehicles_municipality_total(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+          chosen_details["amount_vehicles_provider"] = available_vehicles_municipality_providers(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+        case "distance_travelled":
+          chosen_details["topics"].append("Afstand Afgelegd")
+          chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
+          chosen_details["average_distance_by_provider"] = average_distance_by_provider(json_data)
+        case "rentals":
+          chosen_details["topics"].append("Verhuringen")
+          chosen_details["rentals_neighbourhoods"] = rentals_selected_neighbourhoods_per_day()
+          chosen_details["rentals_per_provider"] = rentals_per_provider_per_day()
+        case "zone_occupation":
+          chosen_details["topics"].append("Zone Bezetting")
+          chosen_details["avg_parkingtime_per_provider"] = average_parkingtime_per_provider_in_hours(json_data)
+          chosen_details["avg_parking_time_half_years"] = average_parking_time_half_years(json_data)
+        case "hubs":
+          chosen_details["topics"].append("Hubs")
+          chosen_details["avg_occupation_hubs"] = avg_occupation_hubs(json_data)
+          chosen_details["vehicle_available_percentage_of_capacity"] = vehicle_available_percentage_of_capacity(json_data)
+        case _:
+          chosen_details = None
+
+  return chosen_details
 
 def park_events_per_municipality(municipality, timeslot):
+  """
+  @param municipality: string
+  @param timeslot: dict 
+
+  Calls the API to get all the parking events in the given municipality
+
+  @return events: dict
+  """
+
   ids = zone_ids_per_municipality(municipality)
   events = park_events(','.join(map(str, ids)), timeslot)
   return events
 
 def zone_ids_per_municipality(municipality):
+  """
+  @param municipality: string
+  
+  Calls the API to get all the 'zones' in the given municipality
+
+  @return ids: list
+  """
   zones = zones_by_gmcode(find_municipality_gmcode(municipality))
   ids = [zone.get("zone_id") for zone in zones]
   return ids
 
 def average_parkingtime_per_vehicletype_in_hours(selectedDetails):
+  """
+  @param selectedDetails: dict
+
+  Calls parking_events_per_municipality to get all the parking events.
+  Reads the parking events and gets the average parking time per vehicle type.
+
+  @return averagePerVehicleType: dict
+  """
+
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   vehicleTypeCount = defaultdict(int)
   sumPerVehicleType = defaultdict(dt.timedelta)
@@ -110,6 +148,15 @@ def average_parkingtime_per_vehicletype_in_hours(selectedDetails):
   return dict(averagePerVehicleType)
 
 def average_parkingtime_per_provider_in_hours(selectedDetails):
+  """
+  @param selectedDetails: dict
+
+  Calls parking_events_per_municipality to get all the parking events.
+  Reads the parking events and gets the average parking time per service provider.
+
+  @return averagePerProvider: dict
+  """
+
   park_event_data = park_events_per_municipality(selectedDetails.get("municipality"), selectedDetails.get("timeslot"))
   provider_count = defaultdict(int)
   sum_per_provider = defaultdict(dt.timedelta)
@@ -130,12 +177,20 @@ def average_parkingtime_per_provider_in_hours(selectedDetails):
   return dict(avaragePerProvider)
 
 def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
+    """
+    @param selectedDetails: dict
+
+    Calls the API to get travel data with the associated zone ids
+    Then it calculates the average distance travelled per vehicle type
+
+    @return averagePerVehicleType: dict
+    """
     municipality_ids = zone_ids_per_municipality(selectedDetails.get("municipality"))
     distance_travelled_data = location_distance_moved(municipality_ids, selectedDetails.get("timeslot").get("start_date"), selectedDetails.get("timeslot").get("end_date")).get("trip_destinations")
     vehicleTypeCount = defaultdict(int)
     sumPerVehicleType = defaultdict(int)
     for distance_data in distance_travelled_data:
-      vehicleTypeCount[distance_data["form_factor"]] += 1 #  system_id  is the brand
+      vehicleTypeCount[distance_data["form_factor"]] += 1 #  form factor is the vehicle type
       sumPerVehicleType[distance_data["form_factor"]] += distance_data["distance_in_meters"]
 
     averagePerVehicleType = defaultdict(int)
@@ -144,6 +199,15 @@ def average_distance_travelled_per_vehicletype_in_meters(selectedDetails):
     return dict(averagePerVehicleType)
 
 def validate_municipality(municipality):
+  """
+  @param municipality: string
+
+  Calls the API to get all the municipality codes
+  Then checks if the given municipality exists in the list
+
+  @return gm_code: string
+  """
+
   codes = gm_codes()
   for gm in codes["filter_values"]["municipalities"]:
     if gm["name"] == municipality:
@@ -151,20 +215,48 @@ def validate_municipality(municipality):
   raise ValueError("Municipality not found")
 
 def zone_ids_by_gmcode(gmcode):
+  """
+  @param gmcode: string
+
+  Calls the API to get all the zones in the given municipality
+
+  @return zones: list
+  """
+
   zones = []
   for zone in zones_by_gmcode(gmcode):
     zones.append(zone["zone_id"])
   return zones
 
 def total_amount_hubs(json_data):
+  """
+  @param json_data: dict
+
+  Calls the API to get all the hubs in a list and then returns the length
+
+  @return amount_hubs: integer
+  """
+
   return len(hubs_by_municipality(json_data.get("municipality")))
 
 def get_service_providers():
+  """
+  Calls the API to get all the service providers
+
+  @return operator_names: list
+  """
+
   operators = user_info().get("operators")
   operator_names = [operators["name"] for operators in operators]
   return operator_names
 
 def total_amount_vehicles():
+  """
+  Calls the API to get the amount of vehicles per service provider in the zones (in production add zone_ids parameter)
+  
+  @return sum_dict: dict
+  """
+
   json_data = vehicles_in_zone_per_day()
   sum_dict = {}
   for item in json_data["available_vehicles_aggregated_stats"]["values"]:
@@ -177,6 +269,12 @@ def total_amount_vehicles():
   return sum_dict
 
 def total_vehicles_rented():
+  """
+  Calls the API to get the rentals in the zones and sums up all the rentals
+
+  @return newJson: dict
+  """
+
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
   for item in vehiclesRentedPerDay:
     item.pop("start_interval")
@@ -185,6 +283,14 @@ def total_vehicles_rented():
   return newJson
 
 def top_5_zones_rented(json_data):
+  """
+  @param json_data: dict
+  
+  Calls the API to get all the rentals per zone, then sums the rentals up and calculates the top 5 zones by rentals
+
+  @return newJson: dict
+  """
+
   zones = zones_by_gmcode(validate_municipality(json_data.get("municipality")))
 
   zones = list(filter(lambda zone: zone["zone_type"] == "neighborhood", zones))
@@ -206,6 +312,15 @@ def top_5_zones_rented(json_data):
   return newJson
 
 def top_5_hubs_rented(json_data):
+  """
+  @param json_data: dict
+
+  Calls the API to get all the hubs and rentals.
+  Then it calculates the top 5 hubs by rentals
+
+  @return top5: dict
+  """
+
   zones = zones_by_gmcode(validate_municipality(json_data["municipality"]))
   top5 = {}
 
@@ -220,6 +335,15 @@ def top_5_hubs_rented(json_data):
   return {"top5": top5}
 
 def avg_occupation_hubs(json_data):
+  """
+  @param json_data: dict
+
+  Calls the API to get all the hubs and available vehicles in the hubs.
+  Then it calculates the average occupation of a hub per vehicle type.
+
+  @return averagePerVehicleType: dict
+  """
+  
   # average vehicles available in a hub
   hub_data = hubs_by_municipality(json_data.get("municipality"))
   countPerVehicleType = defaultdict(int) # aantal keren dat het voertuigtype voorkomt
@@ -238,6 +362,15 @@ def avg_occupation_hubs(json_data):
   return dict(averagePerVehicleType)
 
 def vehicle_available_percentage_of_capacity(json_data):
+    """
+    @param json_data: dict
+
+    Calls the API to get all the hubs and available vehicles.
+    Then it calculates the average available percentage of its capacity.
+    
+    @return percentagePerVehicleType: dict
+    """
+
     hub_data = hubs_by_municipality(json_data.get("municipality"))
     totalCapacity = 0
     totalPerVehicleType = defaultdict(int)
@@ -256,6 +389,13 @@ def vehicle_available_percentage_of_capacity(json_data):
     return dict(percentagePerVehicleType)
 
 def total_vehicles_rented_per_time_period():
+  """
+  Calls the API to get all the rentals in the zones
+  Then it susm up the rentals per vehicle type
+
+  @return sumPerVehicleType: dict
+  """
+
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
   sumPerVehicleType = defaultdict(int) # https://www.geeksforgeeks.org/defaultdict-in-python/
   for item in vehiclesRentedPerDay:
@@ -265,11 +405,27 @@ def total_vehicles_rented_per_time_period():
   return dict(sumPerVehicleType)
 
 def areas_from_json(json_str):
+  """
+  @param json_str: string
+  
+  Reads the given data and returns the areas from the data
+
+  @return areas: list
+  """
+
   data = json.loads(json_str)
   areas = data["areas"]
   return areas
 
 def timeslot_from_json(json_str):
+  """
+  @param json_str: string
+  
+  Reads the given data and returns the timeslot from the data
+
+  @return timeslot: dict
+  """
+
   data = json.loads(json_str)
   json_timeslot = data["timeslot"]
   start_date = datetime.strptime(json_timeslot["start_date"], "%Y-%m-%d")
@@ -278,11 +434,26 @@ def timeslot_from_json(json_str):
   return timeslot
 
 def time_format_from_json(json):
+  """
+  @param json: string
+  
+  Reads the given data and returns the time format from the data
+
+  @return time_format: dict
+  """
+
   data = json.loads(json)
   time_format = data["time_format"]
   return dict(time_format)
 
 def rentals_selected_neighbourhoods_per_day():
+  """
+  Calls the API to get the rentals in the zones.
+  Then it returns the rentals per day
+
+  @return total_per_day: dict
+  """
+
   # echte api de gewenste dagen meegeven en de zone_ids
   vehiclesRentedPerDay = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
 
@@ -296,6 +467,15 @@ def rentals_selected_neighbourhoods_per_day():
 
 
 def distance_covered_halfyears(selected_data):
+    """
+    @param selected_data: dict
+
+    Calls the API to get the travel data of the last 2 years.
+    Then sums up all the distance covered in 6 month periods
+
+    @return distance_data: dict
+    """
+
     municipality = find_municipality_gmcode(selected_data["municipality"])
     distance_data = {}
 
@@ -320,6 +500,15 @@ def distance_covered_halfyears(selected_data):
     return dict(reversed(list(distance_data.items())))
 
 def average_distance_by_provider(selected_data):
+    """
+    @param selected_details: dict
+
+    Calls the API to get the travel data.
+    Then sums up the distance covered per service provider
+
+    @return distance_data: dict
+    """
+
     municipality = find_municipality_gmcode(selected_data["municipality"])
     start_date = selected_data["timeslot"]["start_date"]
     end_date = selected_data["timeslot"]["end_date"]
@@ -340,6 +529,15 @@ def average_distance_by_provider(selected_data):
     return distance_data
 
 def average_parking_time_half_years(selected_data):
+    """
+    @param selected_data: dict
+    
+    Calls the API to get the parking events of the last 2 years.
+    Then it calculates the average parking time of 6 month periods
+
+    @return average_parking_times: dict
+    """
+
     municipality = selected_data["municipality"]
     parking_data = {}
 
@@ -380,6 +578,13 @@ def average_parking_time_half_years(selected_data):
     return dict(reversed(list(average_parking_times.items())))
 
 def rentals_per_provider_per_day():
+    """
+    Calls the API to gets the rentals.
+    Then formats the data and returns it.
+
+    @return data: dict
+    """
+
     rental_data = vehicle_rented_in_zone_per_day()["rentals_aggregated_stats"]["values"]
     data = {}
 
@@ -393,6 +598,28 @@ def rentals_per_provider_per_day():
         data[time] = rentals
 
     return data
+
+def available_vehicles_municipality_total(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": sum(x.values())}, data))
+  output = dict(x = [], y = [])
+  for val in total:
+    output["x"].append(val["x"])
+    output["y"].append(val["y"])
+  return output
+
+def available_vehicles_municipality_providers(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": x}, data))
+  providers = total[1]["y"].keys()
+
+  output = defaultdict(list)
+  for val in total:
+    output["x"].append(val["x"])
+    for provider in providers:
+      output[provider].append(val["y"][provider])
+  return output
+
 
 def login(username, password):
   db = Sqlite_database()
