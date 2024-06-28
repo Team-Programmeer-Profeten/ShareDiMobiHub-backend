@@ -12,11 +12,16 @@ app.config['JWT_SECRET_KEY'] = JWT_SECRET
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
 CORS(app)
+cors = CORS(app, resource={
+    r"/*":{
+        "origins":"145.38.194.144"
+    }
+})
 jwt = JWTManager(app)
 
 
 @jwt_required()
-@app.route('/report', methods = ["POST"])
+@app.route('/api/report', methods = ["POST"])
 def controller():
     """
     This function is the controller for the report generation
@@ -40,7 +45,7 @@ def controller():
     except Exception as e:
         return jsonify(message=str(e)), 500
 
-@app.route('/login', methods = ["POST"])
+@app.route('/api/login', methods = ["POST"])
 def login_route():
     """
     This function is the controller for the login
@@ -55,3 +60,4 @@ def login_route():
     username = data.get("username")
     password = data.get("password")
     return login(username, password)
+

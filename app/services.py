@@ -3,10 +3,10 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
-from pdf_generator import create_pdf
+from app.pdf_generator import create_pdf
 from flask import jsonify
-from api_calls import *
-from sqlite_database import Sqlite_database
+from app.api_calls import *
+from app.sqlite_database import Sqlite_database
 
 database = Sqlite_database()
 database.initialize_database()
