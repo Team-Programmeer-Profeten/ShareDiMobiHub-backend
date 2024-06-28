@@ -2,6 +2,8 @@ import os
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, LabelSet, FactorRange
 from bokeh.io import export_svgs
+from bokeh.palettes import Category20
+from datetime import datetime
 from bokeh.transform import cumsum, factor_cmap
 from bokeh.palettes import Viridis6 as palette
 
@@ -46,6 +48,42 @@ def barchart_horizontal(categories, data, width, height, name, y_axis_label):
 
   p.output_backend = "svg"
   export_svgs(p, filename = graph_path + name + '.svg')
+
+def linechart(x, y, width, height, name):
+  p = figure(width=width, height=height, background_fill_color=None, border_fill_color=None)
+  p.line(x, y, line_width = 2)
+  
+  # labels = LabelSet(x='x', y='y', text='x', level='glyph', text_font_size='10px', text_color='#0A1A29', x_offset=-50, source=source)
+  # p.add_layout(labels)
+
+  # p.xaxis.axis_label = "Aantal verhuringen"
+
+  # p.xaxis.axis_label_text_font = "Poppins"
+  # p.xaxis.axis_label_text_color = "#0A1A29"
+
+  p.output_backend = "svg"
+  export_svgs(p, filename = graph_path + name + '.svg')
+
+# todo: use multiple lines rather than vline_stack in order to be able to create a legend
+def multi_linechart(data, width, height, name):
+    x = data.pop("x")
+
+    x = [datetime.strptime(date, '%Y-%m-%d %H:%M:%S%z') for date in x]
+
+
+    # you can use another bokeh pallete here as long as it has enough colors
+    colors = list(Category20[len(data)])
+    
+    p = figure(width=width, height=height, x_axis_type="datetime", background_fill_color=None, border_fill_color=None)  # Set x_axis_type to "datetime"
+
+    for key, value in data.items():
+      p.line(x, value, line_width = 2, legend_label=key, color=colors.pop())
+
+    p.add_layout(p.legend[0], 'right')
+
+    p.output_backend = "svg"
+    export_svgs(p, filename=graph_path + name + '.svg')
+    
 
 def multi_barchart(data, width, height, name, x_axis_label, y_axis_label):
     dates = list(data.keys())

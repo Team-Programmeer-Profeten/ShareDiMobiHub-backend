@@ -3,6 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import datetime as dt
 from collections import defaultdict
+from graphs import multi_linechart
 from pdf_generator import create_pdf
 
 from api_calls import *
@@ -26,6 +27,8 @@ def select_details(json_data):
 
     municipality = json_data.get("municipality")
     chosen_details["municipality"] = municipality
+
+    gm_code = find_municipality_gmcode(municipality)
 
     start_date = json_data.get("timeslot")["start_date"]
     end_date = json_data.get("timeslot")["end_date"]
@@ -62,7 +65,8 @@ def select_details(json_data):
         match key:
           case "amount_vehicles":
             chosen_details["topics"].append("Hoeveelheid Voertuigen")
-            chosen_details["amount_vehicles"] = vehicles_in_zone_per_day()
+            chosen_details["amount_vehicles"] = available_vehicles_municipality_total(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
+            chosen_details["amount_vehicles_provider"] = available_vehicles_municipality_providers(gm_code, json_data.get("time_format"), start_date_str, end_date_str)
           case "distance_travelled":
             chosen_details["topics"].append("Afstand Afgelegd")
             chosen_details["distance_travelled_halfyears"] = distance_covered_halfyears(json_data)
@@ -590,6 +594,27 @@ def rentals_per_provider_per_day():
         data[time] = rentals
 
     return data
+
+def available_vehicles_municipality_total(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": sum(x.values())}, data))
+  output = dict(x = [], y = [])
+  for val in total:
+    output["x"].append(val["x"])
+    output["y"].append(val["y"])
+  return output
+
+def available_vehicles_municipality_providers(GM_code, aggregation, start_time, end_time):
+  data = vehicles_in_municipality(GM_code, aggregation, start_time, end_time)
+  total = list(map(lambda x: {"x": x.pop("start_interval"), "y": x}, data))
+  providers = total[1]["y"].keys()
+
+  output = defaultdict(list)
+  for val in total:
+    output["x"].append(val["x"])
+    for provider in providers:
+      output[provider].append(val["y"][provider])
+  return output
 
 data = {
   "municipality": "Rotterdam",
