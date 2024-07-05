@@ -1,15 +1,5 @@
 {"users": [
     {
-        "username": "anmar.noah@gmail.com",
-        "password": "12345",
-        "munipicality": "Rotterdam"
-    },
-    {   
-        "username": "t.de.rijk7@gmail.com",
-        "password": "12345",
-        "munipicality": "Utrecht"
-    },
-    {
         "username": "gido.stoop@hu.nl",
         "password": "12345",
         "munipicality": "Rotterdam"
